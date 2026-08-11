@@ -49,7 +49,7 @@ const seedDatabase = async () => {
       {
         category: 'Eligibility',
         title: '1. Roster Eligibility & Enrollment',
-        content: 'Only current students of [COLLEGE NAME] are allowed to participate in this tournament. External players, guest teams, and students from other universities are strictly prohibited. All participants must hold a valid college roll number and active student status.',
+        content: 'Only current students of NIT are allowed to participate in this tournament. External players, guest teams, and students from other universities are strictly prohibited. All participants must hold a valid college roll number and active student status.',
         order: 1
       },
       {
