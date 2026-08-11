@@ -1,6 +1,7 @@
 const Team = require('../models/Team');
 const generateRegistrationId = require('../utils/generateRegistrationId');
 const logAction = require('../utils/auditLogger');
+const sendEmail = require('../utils/sendEmail');
 
 /**
  * @desc    Public multi-step registration for college teams
@@ -11,7 +12,7 @@ const registerTeam = async (req, res, next) => {
   try {
     const { teamName, collegeName, teamLogo, captainName, captainEmail, captainPhone, players } = req.body;
 
-    if (!teamName || !collegeName || !captainName || !captainEmail || !captainPhone) {
+    if (!teamName || !captainName || !captainEmail || !captainPhone) {
       return res.status(400).json({ success: false, message: 'Please provide all required team and captain details' });
     }
 
@@ -25,11 +26,13 @@ const registerTeam = async (req, res, next) => {
       return res.status(400).json({ success: false, message: `Team name "${teamName}" is already registered` });
     }
 
-    // Check for duplicate BGMI IDs across players
+    // Check for duplicate BGMI IDs across players (only if BGMI IDs provided)
     const bgmiIds = players.map(p => p.bgmiId).filter(Boolean);
-    const existingPlayerBgmiId = await Team.findOne({ 'players.bgmiId': { $in: bgmiIds } });
-    if (existingPlayerBgmiId) {
-      return res.status(400).json({ success: false, message: 'One or more BGMI In-Game IDs are already registered by another team' });
+    if (bgmiIds.length > 0) {
+      const existingPlayerBgmiId = await Team.findOne({ 'players.bgmiId': { $in: bgmiIds } });
+      if (existingPlayerBgmiId) {
+        return res.status(400).json({ success: false, message: 'One or more BGMI In-Game IDs are already registered by another team' });
+      }
     }
 
     // Auto-generate Registration ID on backend
@@ -37,8 +40,8 @@ const registerTeam = async (req, res, next) => {
 
     const formattedPlayers = players.map((p, idx) => ({
       name: p.name,
-      ign: p.ign,
-      bgmiId: p.bgmiId,
+      ign: p.ign || p.name || `Player_0${idx + 1}`,
+      bgmiId: p.bgmiId || `BGMI_${Date.now()}_${idx + 1}`,
       role: p.role || 'Support',
       verified: false,
       avatar: p.photo || p.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
@@ -53,7 +56,7 @@ const registerTeam = async (req, res, next) => {
     const team = await Team.create({
       name: teamName,
       shortName,
-      college: collegeName,
+      college: collegeName || 'In-House College Squad',
       logo: teamLogo || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
       banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
       captain: {
@@ -198,6 +201,25 @@ const updateTeamStatus = async (req, res, next) => {
     }
 
     await team.save();
+
+    // Send email notification to captain upon approval
+    if (status === 'Approved' && team.captain && team.captain.email) {
+      await sendEmail({
+        to: team.captain.email,
+        subject: `🎉 Squad Registration Approved — ${team.name} (${team.registrationId})`,
+        text: `Hello ${team.captain.name},\n\nCongratulations! Your squad "${team.name}" (Registration ID: ${team.registrationId}) has been officially VERIFIED AND APPROVED by the tournament admin team for the BGMI Esports Championship 2026.\n\nPlease keep your Registration ID handy for custom room lobby entry.\n\nBest of luck!`,
+        html: `<div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #ffffff; padding: 24px; border-radius: 12px; max-width: 600px;">
+          <h2 style="color: #fbbf24; margin-bottom: 12px;">🎉 Squad Registration Approved!</h2>
+          <p style="font-size: 14px; color: #cbd5e1;">Hello <strong>${team.captain.name}</strong>,</p>
+          <p style="font-size: 14px; color: #cbd5e1;">Congratulations! Your squad <strong>"${team.name}"</strong> has been officially verified and approved for the <strong>BGMI Esports Championship 2026</strong>.</p>
+          <div style="background-color: #1e293b; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #fbbf24;">
+            <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase;">Official Registration ID</p>
+            <p style="margin: 4px 0 0 0; font-size: 24px; font-weight: bold; color: #fbbf24; letter-spacing: 2px;">${team.registrationId}</p>
+          </div>
+          <p style="font-size: 13px; color: #94a3b8;">Please stay tuned to the match schedule for upcoming custom room lobby launch times.</p>
+        </div>`
+      });
+    }
 
     // Log action
     await logAction(`Team Status Updated to ${status}`, req.user, `Rejection reason: ${rejectionReason || 'N/A'}`, team._id.toString(), 'Team');

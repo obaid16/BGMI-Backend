@@ -37,11 +37,11 @@ const seedDatabase = async () => {
     console.log('Seeding default administrator...');
     const adminUser = await User.create({
       name: 'Tournament Director',
-      email: 'admin@bgmi-esports.in',
-      password: 'admin123', // Will be hashed by pre-save middleware
+      email: 'obaidullahshaikh07@gmail.com',
+      password: 'obaid2310', // Will be hashed by pre-save middleware
       role: 'SUPER_ADMIN'
     });
-    console.log('Admin user seeded (admin@bgmi-esports.in / admin123).');
+    console.log('Admin user seeded (obaidullahshaikh07@gmail.com / obaid2310).');
 
     // 2. SEED HANDBOOK RULES (In-house Championship Rules)
     console.log('Seeding rules handbook...');
@@ -151,273 +151,54 @@ const seedDatabase = async () => {
 
     // 4. SEED TEAMS WITH ROSTERS
     console.log('Seeding in-house teams...');
-    const teamMocks = [
-      {
-        name: 'Team Alpha',
-        shortName: 'ALPHA',
-        college: '[COLLEGE NAME]',
-        logo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-        banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-        rank: 1,
-        verified: true,
-        captain: { name: 'Rohan Sharma', email: 'rohan.sharma@student.in', phone: '+91 98765 43210' },
-        registrationId: 'BGMI-2026-001',
-        registrationDate: '2026-08-01',
-        status: 'Approved',
-        players: [
-          { name: 'Rohan Sharma', ign: 'AlphaOP', bgmiId: '5123987410', role: 'IGL', verified: true, avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Aditya Verma', ign: 'Alpha_BLAZE', bgmiId: '5123987411', role: 'Assaulter', verified: true, avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Vikram Patel', ign: 'Alpha_SNIPE', bgmiId: '5123987412', role: 'Sniper', verified: true, avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Siddharth Rao', ign: 'Alpha_SHIELD', bgmiId: '5123987413', role: 'Support', verified: true, avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Karan Joshi', ign: 'Alpha_GHOST', bgmiId: '5123987414', role: 'Substitute', verified: true, avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' }
-        ]
-      },
-      {
-        name: 'Team Titans',
-        shortName: 'TITAN',
-        college: '[COLLEGE NAME]',
-        logo: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=200&auto=format&fit=crop&q=80',
-        banner: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80',
-        rank: 2,
-        verified: true,
-        captain: { name: 'Aarav Mehta', email: 'aarav@student.in', phone: '+91 98765 43211' },
-        registrationId: 'BGMI-2026-002',
-        registrationDate: '2026-08-02',
-        status: 'Approved',
-        players: [
-          { name: 'Aarav Mehta', ign: 'Titan_MAMBA', bgmiId: '5123987420', role: 'IGL', verified: true, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Kabir Roy', ign: 'Titan_FRAG', bgmiId: '5123987421', role: 'Assaulter', verified: true, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Rayan Sen', ign: 'Titan_DEAGLE', bgmiId: '5123987422', role: 'Sniper', verified: true, avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Vivaan Kapoor', ign: 'Titan_DOC', bgmiId: '5123987423', role: 'Support', verified: true, avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' }
-        ]
-      },
-      {
-        name: 'Phoenix Esports',
-        shortName: 'PHNX',
-        college: '[COLLEGE NAME]',
-        logo: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=200&auto=format&fit=crop&q=80',
-        banner: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?w=800&auto=format&fit=crop&q=80',
-        rank: 3,
-        verified: true,
-        captain: { name: 'Yash Vardhan', email: 'yash@student.in', phone: '+91 98765 43212' },
-        registrationId: 'BGMI-2026-003',
-        registrationDate: '2026-08-03',
-        status: 'Approved',
-        players: [
-          { name: 'Yash Vardhan', ign: 'PHX_FIRE', bgmiId: '5123987430', role: 'IGL', verified: true, avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Aniket Gupta', ign: 'PHX_ASSAULT', bgmiId: '5123987431', role: 'Assaulter', verified: true, avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Dev Dixit', ign: 'PHX_SCOPE', bgmiId: '5123987432', role: 'Sniper', verified: true, avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Nikhil Kumar', ign: 'PHX_ANCHOR', bgmiId: '5123987433', role: 'Support', verified: true, avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' }
-        ]
-      },
-      {
-        name: 'Warriors',
-        shortName: 'WAR',
-        college: '[COLLEGE NAME]',
-        logo: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80',
-        banner: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-        rank: 4,
-        verified: true,
-        captain: { name: 'Nikhil Gowda', email: 'nikhil@student.in', phone: '+91 98765 43213' },
-        registrationId: 'BGMI-2026-004',
-        registrationDate: '2026-08-04',
-        status: 'Approved',
-        players: [
-          { name: 'Nikhil Gowda', ign: 'War_NIX', bgmiId: '5123987440', role: 'IGL', verified: true, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Pranav Rao', ign: 'War_PULSE', bgmiId: '5123987441', role: 'Assaulter', verified: true, avatar: 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Tejas Murthy', ign: 'War_SHADOW', bgmiId: '5123987442', role: 'Sniper', verified: true, avatar: 'https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Samarth Gowda', ign: 'War_TANK', bgmiId: '5123987443', role: 'Support', verified: true, avatar: 'https://images.unsplash.com/photo-1489980508314-941910ded1f4?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' }
-        ]
-      },
-      {
-        name: 'Revenants',
-        shortName: 'REVN',
-        college: '[COLLEGE NAME]',
-        logo: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=200&auto=format&fit=crop&q=80',
-        banner: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800&auto=format&fit=crop&q=80',
-        rank: 5,
-        verified: true,
-        captain: { name: 'Anirudh Menon', email: 'anirudh@student.in', phone: '+91 98765 43214' },
-        registrationId: 'BGMI-2026-005',
-        registrationDate: '2026-08-04',
-        status: 'Approved',
-        players: [
-          { name: 'Anirudh Menon', ign: 'Rev_ANIME', bgmiId: '5123987450', role: 'IGL', verified: true, avatar: 'https://images.unsplash.com/photo-1506803682981-6e718a9dd3ee?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Sanjay Nair', ign: 'Rev_FRAG', bgmiId: '5123987451', role: 'Assaulter', verified: true, avatar: 'https://images.unsplash.com/photo-1488161628813-04466f872be2?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Abhishek Pillai', ign: 'Rev_SLAYER', bgmiId: '5123987452', role: 'Sniper', verified: true, avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Madhav R', ign: 'Rev_SUPPORT', bgmiId: '5123987453', role: 'Support', verified: true, avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' }
-        ]
-      },
-      {
-        name: 'Shadow Squad',
-        shortName: 'SHDW',
-        college: '[COLLEGE NAME]',
-        logo: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=200&auto=format&fit=crop&q=80',
-        banner: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&auto=format&fit=crop&q=80',
-        rank: 6,
-        verified: true,
-        captain: { name: 'Sai Teja', email: 'saiteja@student.in', phone: '+91 98765 43215' },
-        registrationId: 'BGMI-2026-006',
-        registrationDate: '2026-08-05',
-        status: 'Approved',
-        players: [
-          { name: 'Sai Teja', ign: 'Shadow_SAGE', bgmiId: '5123987460', role: 'IGL', verified: true, avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Rahul Ch', ign: 'Shadow_RIFT', bgmiId: '5123987461', role: 'Assaulter', verified: true, avatar: 'https://images.unsplash.com/photo-1489980508314-941910ded1f4?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Varun Reddy', ign: 'Shadow_PHX', bgmiId: '5123987462', role: 'Sniper', verified: true, avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Harsha V', ign: 'Shadow_AEGIS', bgmiId: '5123987463', role: 'Support', verified: true, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' }
-        ]
-      },
-      {
-        name: 'Vanguard',
-        shortName: 'VNGD',
-        college: '[COLLEGE NAME]',
-        logo: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=200&auto=format&fit=crop&q=80',
-        banner: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&auto=format&fit=crop&q=80',
-        rank: 7,
-        verified: true,
-        captain: { name: 'Dinesh Kumar', email: 'dinesh@student.in', phone: '+91 98765 43216' },
-        registrationId: 'BGMI-2026-007',
-        registrationDate: '2026-08-05',
-        status: 'Approved',
-        players: [
-          { name: 'Dinesh Kumar', ign: 'Van_DRACO', bgmiId: '5123987470', role: 'IGL', verified: true, avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Vijay Ram', ign: 'Van_VULCAN', bgmiId: '5123987471', role: 'Assaulter', verified: true, avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Suraj S', ign: 'Van_SABRE', bgmiId: '5123987472', role: 'Sniper', verified: true, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Ajay K', ign: 'Van_WARDEN', bgmiId: '5123987473', role: 'Support', verified: true, avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' }
-        ]
-      },
-      {
-        name: 'Cyber Knights',
-        shortName: 'CYBER',
-        college: '[COLLEGE NAME]',
-        logo: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=200&auto=format&fit=crop&q=80',
-        banner: 'https://images.unsplash.com/photo-1563089145-599997674d42?w=800&auto=format&fit=crop&q=80',
-        rank: 8,
-        verified: true,
-        captain: { name: 'Karthik Prabhu', email: 'karthik@student.in', phone: '+91 98765 43217' },
-        registrationId: 'BGMI-2026-008',
-        registrationDate: '2026-08-05',
-        status: 'Approved',
-        players: [
-          { name: 'Karthik Prabhu', ign: 'Cyber_KNGHT', bgmiId: '5123987480', role: 'IGL', verified: true, avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Pranav Bhat', ign: 'Cyber_PRO', bgmiId: '5123987481', role: 'Assaulter', verified: true, avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Rohit K', ign: 'Cyber_RAGE', bgmiId: '5123987482', role: 'Sniper', verified: true, avatar: 'https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' },
-          { name: 'Sumit Shenoy', ign: 'Cyber_AEGIS', bgmiId: '5123987483', role: 'Support', verified: true, avatar: 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Verified' }
-        ]
-      },
-      {
-        name: 'Gladiators',
-        shortName: 'GLAD',
-        college: '[COLLEGE NAME]',
-        logo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-        banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-        rank: 0,
-        verified: false,
-        captain: { name: 'Aman Deep', email: 'aman@student.in', phone: '+91 98765 99901' },
-        registrationId: 'BGMI-2026-009',
-        registrationDate: '2026-08-08',
-        status: 'Pending',
-        players: [
-          { name: 'Aman Deep', ign: 'Glad_AMAN', bgmiId: '5123987490', role: 'IGL', verified: false, avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Pending Verification' },
-          { name: 'Suhail Khan', ign: 'Glad_ZEUS', bgmiId: '5123987491', role: 'Assaulter', verified: false, avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Pending Verification' },
-          { name: 'Abhay Sen', ign: 'Glad_HERO', bgmiId: '5123987492', role: 'Sniper', verified: false, avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Pending Verification' },
-          { name: 'Ritvik Murthy', ign: 'Glad_SUPPORT', bgmiId: '5123987493', role: 'Support', verified: false, avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=150&auto=format&fit=crop&q=80', studentProof: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80', verificationStatus: 'Pending Verification' }
-        ]
-      }
-    ];
+    const teamMocks = [];
 
     const seededTeams = await Team.insertMany(teamMocks);
     console.log(`Seeded ${seededTeams.length} teams.`);
 
     // 5. SEED MATCHES
     console.log('Seeding tournament match schedules...');
-    const participatingTeamsFormatted = seededTeams
-      .filter(t => t.status === 'Approved')
-      .map(t => ({ id: t._id.toString(), name: t.name, shortName: t.shortName }));
+    const participatingTeamsFormatted = [];
 
     const matchesMocks = [
       {
         matchNumber: 1,
-        title: 'Match #01 - Group Stage Erangel Opener',
-        round: 'Group Stage',
-        map: 'Erangel',
-        date: '2026-08-05',
-        time: '02:00 PM',
-        status: 'Completed',
-        teamsCount: participatingTeamsFormatted.length,
-        participatingTeams: participatingTeamsFormatted
-      },
-      {
-        matchNumber: 2,
-        title: 'Match #02 - Group Stage Miramar Scuffle',
-        round: 'Group Stage',
-        map: 'Miramar',
-        date: '2026-08-05',
-        time: '05:00 PM',
-        status: 'Completed',
-        teamsCount: participatingTeamsFormatted.length,
-        participatingTeams: participatingTeamsFormatted
-      },
-      {
-        matchNumber: 3,
-        title: 'Match #03 - Group Stage Vikendi Freeze',
-        round: 'Group Stage',
-        map: 'Vikendi',
-        date: '2026-08-06',
-        time: '02:00 PM',
-        status: 'Completed',
-        teamsCount: participatingTeamsFormatted.length,
-        participatingTeams: participatingTeamsFormatted
-      },
-      {
-        matchNumber: 4,
-        title: 'Match #04 - Quarterfinal Erangel Assault',
-        round: 'Quarterfinal',
-        map: 'Erangel',
-        date: '2026-08-06',
-        time: '05:00 PM',
-        status: 'Completed',
-        teamsCount: participatingTeamsFormatted.length,
-        participatingTeams: participatingTeamsFormatted
-      },
-      {
-        matchNumber: 5,
-        title: 'Match #05 - Quarterfinal Sanhok Survival',
-        round: 'Quarterfinal',
-        map: 'Sanhok',
-        date: '2026-08-07',
-        time: '01:30 PM',
-        status: 'Completed',
-        teamsCount: participatingTeamsFormatted.length,
-        participatingTeams: participatingTeamsFormatted
-      },
-      {
-        matchNumber: 6,
-        title: 'Match #06 - Semifinal Miramar Battle',
-        round: 'Semifinal',
-        map: 'Miramar',
-        date: '2026-08-07',
-        time: '04:00 PM',
-        status: 'Completed',
-        teamsCount: participatingTeamsFormatted.length,
-        participatingTeams: participatingTeamsFormatted
-      },
-      {
-        matchNumber: 7,
-        title: 'Match #07 - Semifinal Group A vs B',
-        round: 'Semifinal',
+        title: 'Match #1 — Erangel',
+        round: 'Match 1',
         map: 'Erangel',
         date: '2026-08-08',
-        time: '10:30 AM',
+        time: '10:00 AM',
         status: 'Upcoming',
         teamsCount: participatingTeamsFormatted.length,
         participatingTeams: participatingTeamsFormatted
       },
       {
-        matchNumber: 8,
-        title: 'Match #08 - Grand Final Showdown',
-        round: 'Grand Final',
-        map: 'Miramar',
+        matchNumber: 2,
+        title: 'Match #2 — Livik',
+        round: 'Match 2',
+        map: 'Livik',
+        date: '2026-08-08',
+        time: '12:30 PM',
+        status: 'Upcoming',
+        teamsCount: participatingTeamsFormatted.length,
+        participatingTeams: participatingTeamsFormatted
+      },
+      {
+        matchNumber: 3,
+        title: 'Match #3 — Livik',
+        round: 'Match 3',
+        map: 'Livik',
+        date: '2026-08-08',
+        time: '03:30 PM',
+        status: 'Upcoming',
+        teamsCount: participatingTeamsFormatted.length,
+        participatingTeams: participatingTeamsFormatted
+      },
+      {
+        matchNumber: 4,
+        title: 'Match #4 — Erangel',
+        round: 'Match 4',
+        map: 'Erangel',
         date: '2026-08-08',
         time: '06:00 PM',
         status: 'Upcoming',
@@ -438,93 +219,7 @@ const seedDatabase = async () => {
     // 6. SEED MATCH RESULTS (AND AUTO CALCULATE TEAMS POINTS)
     console.log('Seeding match results scorecards...');
     
-    // We will seed results for Matches 3, 4, 5, 6
-    const resultsMocks = [
-      {
-        matchNumber: 3,
-        round: 'Group Stage',
-        map: 'Vikendi',
-        date: '2026-08-06',
-        winnerTeam: 'Team Alpha',
-        mvp: {
-          name: 'Rohan Sharma (AlphaOP)',
-          team: 'Team Alpha',
-          kills: 6,
-          damage: 790,
-          avatar: 'https://images.unsplash.com/photo-1566492031773-4f4e44671857?w=150&auto=format&fit=crop&q=80'
-        },
-        scores: [
-          { rank: 1, team: 'Team Alpha', placementPts: 15, kills: 15, killPts: 15, total: 30 },
-          { rank: 2, team: 'Team Titans', placementPts: 12, kills: 8, killPts: 8, total: 20 },
-          { rank: 3, team: 'Revenants', placementPts: 10, kills: 5, killPts: 5, total: 15 },
-          { rank: 4, team: 'Phoenix Esports', placementPts: 8, kills: 4, killPts: 4, total: 12 }
-        ]
-      },
-      {
-        matchNumber: 4,
-        round: 'Quarterfinal',
-        map: 'Erangel',
-        date: '2026-08-06',
-        winnerTeam: 'Phoenix Esports',
-        mvp: {
-          name: 'Yash Vardhan (PHX_FIRE)',
-          team: 'Phoenix Esports',
-          kills: 5,
-          damage: 640,
-          avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=150&auto=format&fit=crop&q=80'
-        },
-        scores: [
-          { rank: 1, team: 'Phoenix Esports', placementPts: 15, kills: 10, killPts: 10, total: 25 },
-          { rank: 2, team: 'Team Alpha', placementPts: 12, kills: 6, killPts: 6, total: 18 },
-          { rank: 3, team: 'Warriors', placementPts: 10, kills: 7, killPts: 7, total: 17 },
-          { rank: 4, team: 'Team Titans', placementPts: 8, kills: 3, killPts: 3, total: 11 }
-        ]
-      },
-      {
-        matchNumber: 5,
-        round: 'Quarterfinal',
-        map: 'Sanhok',
-        date: '2026-08-07',
-        winnerTeam: 'Team Titans',
-        mvp: {
-          name: 'Kabir Roy (Titan_FRAG)',
-          team: 'Team Titans',
-          kills: 7,
-          damage: 1020,
-          avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80'
-        },
-        scores: [
-          { rank: 1, team: 'Team Titans', placementPts: 15, kills: 14, killPts: 14, total: 29 },
-          { rank: 2, team: 'Team Alpha', placementPts: 12, kills: 8, killPts: 8, total: 20 },
-          { rank: 3, team: 'Revenants', placementPts: 10, kills: 6, killPts: 6, total: 16 },
-          { rank: 4, team: 'Phoenix Esports', placementPts: 8, kills: 4, killPts: 4, total: 12 }
-        ]
-      },
-      {
-        matchNumber: 6,
-        round: 'Semifinal',
-        map: 'Miramar',
-        date: '2026-08-07',
-        winnerTeam: 'Team Alpha',
-        mvp: {
-          name: 'Aditya Verma (Alpha_BLAZE)',
-          team: 'Team Alpha',
-          kills: 6,
-          damage: 840,
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
-        },
-        scores: [
-          { rank: 1, team: 'Team Alpha', placementPts: 15, kills: 12, killPts: 12, total: 27 },
-          { rank: 2, team: 'Team Titans', placementPts: 12, kills: 9, killPts: 9, total: 21 },
-          { rank: 3, team: 'Phoenix Esports', placementPts: 10, kills: 7, killPts: 7, total: 17 },
-          { rank: 4, team: 'Warriors', placementPts: 8, kills: 5, killPts: 5, total: 13 },
-          { rank: 5, team: 'Revenants', placementPts: 6, kills: 6, killPts: 6, total: 12 },
-          { rank: 6, team: 'Shadow Squad', placementPts: 4, kills: 3, killPts: 3, total: 7 },
-          { rank: 7, team: 'Vanguard', placementPts: 2, kills: 2, killPts: 2, total: 4 },
-          { rank: 8, team: 'Cyber Knights', placementPts: 1, kills: 1, killPts: 1, total: 2 }
-        ]
-      }
-    ];
+    const resultsMocks = [];
 
     for (const r of resultsMocks) {
       const matchDoc = seededMatches.find(m => m.matchNumber === r.matchNumber);

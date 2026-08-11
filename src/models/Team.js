@@ -8,18 +8,19 @@ const PlayerSchema = new mongoose.Schema({
   },
   ign: {
     type: String,
-    required: true,
+    required: false,
+    default: '',
     trim: true
   },
   bgmiId: {
     type: String,
-    required: true,
+    required: false,
+    default: '',
     trim: true
   },
   role: {
     type: String,
     required: true,
-    enum: ['IGL', 'Assaulter', 'Support', 'Sniper', 'Entry Fragger', 'Substitute'],
     default: 'Support'
   },
   verified: {
@@ -63,7 +64,8 @@ const TeamSchema = new mongoose.Schema({
   },
   college: {
     type: String,
-    required: true,
+    required: false,
+    default: 'In-House College Squad',
     trim: true
   },
   logo: {

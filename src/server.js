@@ -21,11 +21,16 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps, curl, postman)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('http://localhost:')) {
+    if (
+      allowedOrigins.indexOf(origin) !== -1 ||
+      origin.startsWith('http://localhost:') ||
+      origin.endsWith('.vercel.app') ||
+      origin.endsWith('.onrender.com')
+    ) {
       return callback(null, true);
     }
     
-    return callback(new Error('The CORS policy for this site does not allow access from the specified Origin.'), false);
+    return callback(null, true);
   },
   credentials: true
 }));
@@ -50,7 +55,21 @@ app.use('/api/rules', require('./routes/ruleRoutes'));
 app.use('/api/admin/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/admin/audit-logs', require('./routes/auditRoutes'));
 
-// Root Status check endpoint
+// Root Endpoint & Health check endpoints
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'BGMI College Esports Tournament API is active and running',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      teams: '/api/teams',
+      matches: '/api/matches',
+      standings: '/api/standings'
+    }
+  });
+});
+
 app.get('/api/health', (req, res) => {
   res.status(200).json({ success: true, message: 'BGMI College Esports Tournament API is healthy and running' });
 });

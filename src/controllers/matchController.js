@@ -19,8 +19,8 @@ const getMatches = async (req, res, next) => {
       query.round = round;
     }
 
-    // Sort: live first, then upcoming by date, then completed by date descending
-    const matches = await Match.find(query).sort({ status: -1, date: 1, time: 1 });
+    // Sort: matchNumber ascending (1, 2, 3, 4)
+    const matches = await Match.find(query).sort({ matchNumber: 1 });
     res.status(200).json({ success: true, data: matches });
   } catch (error) {
     next(error);

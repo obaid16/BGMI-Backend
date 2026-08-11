@@ -18,7 +18,7 @@ const MatchSchema = new mongoose.Schema({
   map: {
     type: String,
     required: true,
-    enum: ['Erangel', 'Miramar', 'Sanhok', 'Vikendi'],
+    enum: ['Erangel', 'Livik'],
     default: 'Erangel'
   },
   date: {
