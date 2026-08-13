@@ -7,6 +7,24 @@ const { errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
 
+// 1. High-Visibility Terminal Request Logger Middleware (Runs BEFORE CORS & Routes)
+app.use((req, res, next) => {
+  const start = Date.now();
+  const timestamp = new Date().toLocaleTimeString();
+  
+  // Log request arrival immediately
+  console.log(`\n[API REQUEST ${timestamp}] 🚀 ${req.method} ${req.originalUrl}`);
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const status = res.statusCode;
+    const color = status >= 500 ? '\x1b[31m' : status >= 400 ? '\x1b[33m' : status >= 300 ? '\x1b[36m' : '\x1b[32m';
+    const reset = '\x1b[0m';
+    console.log(`[API RESPONSE ${timestamp}] ${color}${status} ${res.statusMessage || ''}${reset} in ${duration}ms (${req.method} ${req.originalUrl})`);
+  });
+  next();
+});
+
 // Connect to MongoDB
 connectDB();
 
@@ -18,9 +36,7 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, curl, postman)
     if (!origin) return callback(null, true);
-    
     if (
       allowedOrigins.indexOf(origin) !== -1 ||
       origin.startsWith('http://localhost:') ||
@@ -29,18 +45,19 @@ app.use(cors({
     ) {
       return callback(null, true);
     }
-    
     return callback(null, true);
   },
   credentials: true
 }));
 
 // Body Parsers
-app.use(express.json({ limit: '10mb' })); // Support JSON payloads up to 10MB (for base64 logo/banners if needed)
+app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
 
 // Serve uploaded media statically
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 
 // Routes mapping
 app.use('/api/auth', require('./routes/authRoutes'));

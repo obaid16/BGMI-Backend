@@ -132,14 +132,20 @@ const updatePlayer = async (req, res, next) => {
     const player = team.players.id(id);
     
     // Update fields
-    const fieldsToUpdate = ['name', 'ign', 'bgmiId', 'role', 'avatar', 'kills', 'kdRatio', 'verified'];
+    const fieldsToUpdate = ['name', 'ign', 'bgmiId', 'role', 'avatar', 'kills', 'matchesPlayed', 'kdRatio', 'verified'];
     fieldsToUpdate.forEach(field => {
       if (req.body[field] !== undefined) {
         player[field] = req.body[field];
       }
     });
 
+    // Auto-calculate K/D ratio (Total Kills / Matches Played)
+    const totalKills = Number(player.kills) || 0;
+    const totalMatches = Number(player.matchesPlayed) || 1;
+    player.kdRatio = parseFloat((totalKills / Math.max(1, totalMatches)).toFixed(2));
+
     await team.save();
+
 
     await logAction(
       'Player Profile Updated', 

@@ -44,11 +44,16 @@ const PlayerSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  matchesPlayed: {
+    type: Number,
+    default: 1
+  },
   kdRatio: {
     type: Number,
     default: 0.0
   }
 });
+
 
 const TeamSchema = new mongoose.Schema({
   name: {

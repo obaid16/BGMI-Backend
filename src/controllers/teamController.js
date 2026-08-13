@@ -73,6 +73,52 @@ const registerTeam = async (req, res, next) => {
     // Log action
     await logAction('Team Registered', null, `Team ${team.name} registered with ID ${registrationId}`, team._id.toString(), 'Team');
 
+    // Send Instant Registration Confirmation Email to Captain
+    if (captainEmail) {
+      sendEmail({
+        to: captainEmail,
+        subject: `🎮 Squad Registration Received: ${teamName} (ID: ${registrationId})`,
+        text: `Hello ${captainName},\n\nThank you for registering your squad "${teamName}" for the BGMI Esports Championship 2026!\n\nRegistration ID: ${registrationId}\nStatus: Under Verification\n\nOur tournament admins are currently reviewing your player roster and student proofs. Once verified, your status will update to APPROVED and you will receive custom room lobby details.\n\nBest of luck!`,
+        html: `
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #0a0b0e; color: #f4f5f8; padding: 32px 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="text-align: center; padding-bottom: 20px; border-b: 1px solid rgba(255,255,255,0.1);">
+            <h1 style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: 2px; margin: 0;">NIT BGMI ESPORTS CHAMPIONSHIP</h1>
+            <p style="font-size: 11px; color: #e50914; font-weight: 700; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Official Registration Confirmation</p>
+          </div>
+
+          <div style="padding: 24px 0; space-y: 16px;">
+            <p style="font-size: 15px; color: #e2e8f0; margin-bottom: 16px;">Hello <strong>${captainName}</strong>,</p>
+            <p style="font-size: 14px; color: #94a3b8; line-height: 1.6;">
+              Your squad <strong style="color: #ffffff;">"${teamName}"</strong> has successfully registered for the <strong>BGMI Esports Championship 2026</strong>.
+            </p>
+
+            <div style="background-color: #12141c; padding: 20px; border-radius: 6px; border-left: 4px solid #e50914; margin: 20px 0;">
+              <p style="margin: 0; font-size: 10px; color: #c8aa6e; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Registration Reference ID</p>
+              <p style="margin: 6px 0 0 0; font-size: 26px; font-weight: 900; color: #ffffff; letter-spacing: 2px;">${registrationId}</p>
+              <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">Status: <span style="color: #fbbf24; font-weight: bold;">● UNDER VERIFICATION</span></p>
+            </div>
+
+            <div style="background-color: #12141c; padding: 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+              <h3 style="font-size: 12px; color: #c8aa6e; text-transform: uppercase; margin: 0 0 10px 0; letter-spacing: 1px;">Registered Squad Details</h3>
+              <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>College / Campus:</strong> ${collegeName || 'NIT Campus'}</p>
+              <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>Captain Phone:</strong> ${captainPhone}</p>
+              <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>Roster Players:</strong> ${players.length} Players Submitted</p>
+            </div>
+
+            <p style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
+              Our admin panel is currently reviewing your player student verification IDs. Once verified, you will receive an official Approval notification with Custom Room credentials.
+            </p>
+          </div>
+
+          <div style="text-align: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: #64748b;">
+            <p style="margin: 0;">NIT BGMI Esports Committee • Tournament Operations</p>
+            <p style="margin: 4px 0 0 0;">This is an automated message. Please keep your Registration ID secure.</p>
+          </div>
+        </div>
+        `
+      }).catch(err => console.error('Error sending registration confirmation email:', err));
+    }
+
     res.status(201).json({
       success: true,
       message: 'Team registered successfully',
@@ -82,6 +128,7 @@ const registerTeam = async (req, res, next) => {
         team
       }
     });
+
   } catch (error) {
     next(error);
   }
