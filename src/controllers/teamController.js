@@ -251,6 +251,19 @@ const updateTeamStatus = async (req, res, next) => {
     team.status = status;
     team.verified = status === 'Approved';
     
+    // Automatically approve/verify or reject all players in the squad roster by default
+    if (team.players && Array.isArray(team.players)) {
+      team.players.forEach((player) => {
+        if (status === 'Approved') {
+          player.verified = true;
+          player.verificationStatus = 'Verified';
+        } else if (status === 'Rejected') {
+          player.verified = false;
+          player.verificationStatus = 'Rejected';
+        }
+      });
+    }
+
     if (status === 'Rejected' && rejectionReason) {
       team.rejectionReason = rejectionReason;
     }
