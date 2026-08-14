@@ -4,14 +4,9 @@
  */
 const SCORING_CONFIG = {
   placementPointsMap: {
-    1: 15,
-    2: 12,
-    3: 10,
-    4: 8,
-    5: 6,
-    6: 4,
-    7: 2,
-    8: 1
+    1: 10,
+    2: 8,
+    3: 5
   },
   killPointMultiplier: 1,
   defaultBonusWWCD: 0 // Optional WWCD extra bonus if specified

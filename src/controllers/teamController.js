@@ -74,49 +74,54 @@ const registerTeam = async (req, res, next) => {
     await logAction('Team Registered', null, `Team ${team.name} registered with ID ${registrationId}`, team._id.toString(), 'Team');
 
     // Send Instant Registration Confirmation Email to Captain
+    let emailSent = false;
     if (captainEmail) {
-      sendEmail({
-        to: captainEmail,
-        subject: `🎮 Squad Registration Received: ${teamName} (ID: ${registrationId})`,
-        text: `Hello ${captainName},\n\nThank you for registering your squad "${teamName}" for the BGMI Esports Championship 2026!\n\nRegistration ID: ${registrationId}\nStatus: Under Verification\n\nOur tournament admins are currently reviewing your player roster and student proofs. Once verified, your status will update to APPROVED and you will receive custom room lobby details.\n\nBest of luck!`,
-        html: `
-        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #0a0b0e; color: #f4f5f8; padding: 32px 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.1);">
-          <div style="text-align: center; padding-bottom: 20px; border-b: 1px solid rgba(255,255,255,0.1);">
-            <h1 style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: 2px; margin: 0;">NIT BGMI ESPORTS CHAMPIONSHIP</h1>
-            <p style="font-size: 11px; color: #e50914; font-weight: 700; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Official Registration Confirmation</p>
-          </div>
-
-          <div style="padding: 24px 0; space-y: 16px;">
-            <p style="font-size: 15px; color: #e2e8f0; margin-bottom: 16px;">Hello <strong>${captainName}</strong>,</p>
-            <p style="font-size: 14px; color: #94a3b8; line-height: 1.6;">
-              Your squad <strong style="color: #ffffff;">"${teamName}"</strong> has successfully registered for the <strong>BGMI Esports Championship 2026</strong>.
-            </p>
-
-            <div style="background-color: #12141c; padding: 20px; border-radius: 6px; border-left: 4px solid #e50914; margin: 20px 0;">
-              <p style="margin: 0; font-size: 10px; color: #c8aa6e; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Registration Reference ID</p>
-              <p style="margin: 6px 0 0 0; font-size: 26px; font-weight: 900; color: #ffffff; letter-spacing: 2px;">${registrationId}</p>
-              <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">Status: <span style="color: #fbbf24; font-weight: bold;">● UNDER VERIFICATION</span></p>
+      try {
+        emailSent = await sendEmail({
+          to: captainEmail,
+          subject: `🎮 Squad Registration Received: ${teamName} (ID: ${registrationId})`,
+          text: `Hello ${captainName},\n\nThank you for registering your squad "${teamName}" for the BGMI Esports Championship 2026!\n\nRegistration ID: ${registrationId}\nStatus: Under Verification\n\nOur tournament admins are currently reviewing your player roster and student proofs. Once verified, your status will update to APPROVED and you will receive custom room lobby details.\n\nBest of luck!`,
+          html: `
+          <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #0a0b0e; color: #f4f5f8; padding: 32px 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="text-align: center; padding-bottom: 20px; border-b: 1px solid rgba(255,255,255,0.1);">
+              <h1 style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: 2px; margin: 0;">BGMI ESPORTS CHAMPIONSHIP</h1>
+              <p style="font-size: 11px; color: #e50914; font-weight: 700; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Official Registration Confirmation</p>
             </div>
 
-            <div style="background-color: #12141c; padding: 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
-              <h3 style="font-size: 12px; color: #c8aa6e; text-transform: uppercase; margin: 0 0 10px 0; letter-spacing: 1px;">Registered Squad Details</h3>
-              <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>College / Campus:</strong> ${collegeName || 'NIT Campus'}</p>
-              <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>Captain Phone:</strong> ${captainPhone}</p>
-              <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>Roster Players:</strong> ${players.length} Players Submitted</p>
+            <div style="padding: 24px 0; space-y: 16px;">
+              <p style="font-size: 15px; color: #e2e8f0; margin-bottom: 16px;">Hello <strong>${captainName}</strong>,</p>
+              <p style="font-size: 14px; color: #94a3b8; line-height: 1.6;">
+                Your squad <strong style="color: #ffffff;">"${teamName}"</strong> has successfully registered for the <strong>BGMI Esports Championship 2026</strong>.
+              </p>
+
+              <div style="background-color: #12141c; padding: 20px; border-radius: 6px; border-left: 4px solid #e50914; margin: 20px 0;">
+                <p style="margin: 0; font-size: 10px; color: #c8aa6e; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Registration Reference ID</p>
+                <p style="margin: 6px 0 0 0; font-size: 26px; font-weight: 900; color: #ffffff; letter-spacing: 2px;">${registrationId}</p>
+                <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">Status: <span style="color: #fbbf24; font-weight: bold;">● UNDER VERIFICATION</span></p>
+              </div>
+
+              <div style="background-color: #12141c; padding: 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+                <h3 style="font-size: 12px; color: #c8aa6e; text-transform: uppercase; margin: 0 0 10px 0; letter-spacing: 1px;">Registered Squad Details</h3>
+                <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>College / Campus:</strong> ${collegeName || 'Campus'}</p>
+                <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>Captain Phone:</strong> ${captainPhone}</p>
+                <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>Roster Players:</strong> ${players.length} Players Submitted</p>
+              </div>
+
+              <p style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
+                Our admin panel is currently reviewing your player student verification IDs. Once verified, you will receive an official Approval notification with Custom Room credentials.
+              </p>
             </div>
 
-            <p style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
-              Our admin panel is currently reviewing your player student verification IDs. Once verified, you will receive an official Approval notification with Custom Room credentials.
-            </p>
+            <div style="text-align: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: #64748b;">
+              <p style="margin: 0;">BGMI Esports Committee • Tournament Operations</p>
+              <p style="margin: 4px 0 0 0;">This is an automated message. Please keep your Registration ID secure.</p>
+            </div>
           </div>
-
-          <div style="text-align: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: #64748b;">
-            <p style="margin: 0;">NIT BGMI Esports Committee • Tournament Operations</p>
-            <p style="margin: 4px 0 0 0;">This is an automated message. Please keep your Registration ID secure.</p>
-          </div>
-        </div>
-        `
-      }).catch(err => console.error('Error sending registration confirmation email:', err));
+          `
+        });
+      } catch (err) {
+        console.error('Error sending registration confirmation email:', err.message);
+      }
     }
 
     res.status(201).json({
@@ -249,23 +254,49 @@ const updateTeamStatus = async (req, res, next) => {
 
     await team.save();
 
-    // Send email notification to captain upon approval
-    if (status === 'Approved' && team.captain && team.captain.email) {
-      await sendEmail({
-        to: team.captain.email,
-        subject: `🎉 Squad Registration Approved — ${team.name} (${team.registrationId})`,
-        text: `Hello ${team.captain.name},\n\nCongratulations! Your squad "${team.name}" (Registration ID: ${team.registrationId}) has been officially VERIFIED AND APPROVED by the tournament admin team for the BGMI Esports Championship 2026.\n\nPlease keep your Registration ID handy for custom room lobby entry.\n\nBest of luck!`,
-        html: `<div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #ffffff; padding: 24px; border-radius: 12px; max-width: 600px;">
-          <h2 style="color: #fbbf24; margin-bottom: 12px;">🎉 Squad Registration Approved!</h2>
-          <p style="font-size: 14px; color: #cbd5e1;">Hello <strong>${team.captain.name}</strong>,</p>
-          <p style="font-size: 14px; color: #cbd5e1;">Congratulations! Your squad <strong>"${team.name}"</strong> has been officially verified and approved for the <strong>BGMI Esports Championship 2026</strong>.</p>
-          <div style="background-color: #1e293b; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #fbbf24;">
-            <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase;">Official Registration ID</p>
-            <p style="margin: 4px 0 0 0; font-size: 24px; font-weight: bold; color: #fbbf24; letter-spacing: 2px;">${team.registrationId}</p>
-          </div>
-          <p style="font-size: 13px; color: #94a3b8;">Please stay tuned to the match schedule for upcoming custom room lobby launch times.</p>
-        </div>`
-      });
+    // Send email notification to captain upon approval or rejection
+    const targetEmail = team.captain?.email || team.captainEmail || team.email;
+    const targetName = team.captain?.name || team.captainName || 'Team Captain';
+    let emailSent = false;
+
+    if (targetEmail) {
+      try {
+        if (status === 'Approved') {
+          emailSent = await sendEmail({
+            to: targetEmail,
+            subject: `🎉 Squad Registration Approved — ${team.name} (${team.registrationId})`,
+            text: `Hello ${targetName},\n\nCongratulations! Your squad "${team.name}" (Registration ID: ${team.registrationId}) has been officially VERIFIED AND APPROVED by the tournament admin team for the BGMI Esports Championship 2026.\n\nPlease keep your Registration ID handy for custom room lobby entry.\n\nBest of luck!`,
+            html: `<div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #ffffff; padding: 24px; border-radius: 12px; max-width: 600px;">
+              <h2 style="color: #fbbf24; margin-bottom: 12px;">🎉 Squad Registration Approved!</h2>
+              <p style="font-size: 14px; color: #cbd5e1;">Hello <strong>${targetName}</strong>,</p>
+              <p style="font-size: 14px; color: #cbd5e1;">Congratulations! Your squad <strong>"${team.name}"</strong> has been officially verified and approved for the <strong>BGMI Esports Championship 2026</strong>.</p>
+              <div style="background-color: #1e293b; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #fbbf24;">
+                <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase;">Official Registration ID</p>
+                <p style="margin: 4px 0 0 0; font-size: 24px; font-weight: bold; color: #fbbf24; letter-spacing: 2px;">${team.registrationId}</p>
+              </div>
+              <p style="font-size: 13px; color: #94a3b8;">Please stay tuned to the match schedule for upcoming custom room lobby launch times.</p>
+            </div>`
+          });
+        } else if (status === 'Rejected') {
+          emailSent = await sendEmail({
+            to: targetEmail,
+            subject: `❌ Squad Registration Update — ${team.name} (${team.registrationId})`,
+            text: `Hello ${targetName},\n\nYour squad application for "${team.name}" (Registration ID: ${team.registrationId}) has been reviewed by the tournament admin team and was REJECTED.\n\nReason: ${rejectionReason || 'Documents or roster details incomplete'}\n\nPlease contact tournament support if you believe this is an error.`,
+            html: `<div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #ffffff; padding: 24px; border-radius: 12px; max-width: 600px;">
+              <h2 style="color: #ef4444; margin-bottom: 12px;">❌ Squad Registration Update</h2>
+              <p style="font-size: 14px; color: #cbd5e1;">Hello <strong>${targetName}</strong>,</p>
+              <p style="font-size: 14px; color: #cbd5e1;">Your squad application for <strong>"${team.name}"</strong> (ID: <code>${team.registrationId}</code>) was reviewed and <strong>REJECTED</strong> by tournament admins.</p>
+              <div style="background-color: #1e293b; padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #ef4444;">
+                <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase;">Reason</p>
+                <p style="margin: 4px 0 0 0; font-size: 14px; font-weight: bold; color: #f87171;">${rejectionReason || 'Roster details or student verification proof did not pass review.'}</p>
+              </div>
+              <p style="font-size: 13px; color: #94a3b8;">You may submit a updated application or reach out to tournament support.</p>
+            </div>`
+          });
+        }
+      } catch (err) {
+        console.error('Email dispatch error in updateTeamStatus:', err.message);
+      }
     }
 
     // Log action
@@ -274,6 +305,7 @@ const updateTeamStatus = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: `Team status updated to ${status}`,
+      emailSent,
       team
     });
   } catch (error) {

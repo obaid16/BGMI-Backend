@@ -1,36 +1,69 @@
 /**
  * Utility to send email notifications (e.g. Squad Approval Email to Team Captain)
  */
+if (!process.env.SMTP_HOST) {
+  try {
+    require('dotenv').config();
+  } catch (e) {}
+}
+
+let pooledTransporter = null;
+
+function getTransporter() {
+  if (pooledTransporter) return pooledTransporter;
+
+  let nodemailer;
+  try {
+    nodemailer = require('nodemailer');
+  } catch (e) {
+    return null;
+  }
+
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  const port = Number(process.env.SMTP_PORT) || 587;
+
+  if (nodemailer && host && user) {
+    pooledTransporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: process.env.SMTP_SECURE === 'true' || port === 465,
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+      auth: {
+        user,
+        pass
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+  }
+
+  return pooledTransporter;
+}
+
 const sendEmail = async ({ to, subject, html, text }) => {
   try {
-    let nodemailer;
-    try {
-      nodemailer = require('nodemailer');
-    } catch (e) {
-      nodemailer = null;
+    if (!to || typeof to !== 'string' || !to.includes('@')) {
+      console.warn('[EMAIL WARNING] Invalid recipient email address provided:', to);
+      return false;
     }
 
-    // If SMTP credentials exist in environment variables and nodemailer is installed, use transporter
-    if (nodemailer && process.env.SMTP_HOST && process.env.SMTP_USER) {
-      const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT) || 587,
-        secure: process.env.SMTP_SECURE === 'true' || Number(process.env.SMTP_PORT) === 465,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        },
-        tls: {
-          rejectUnauthorized: false
-        }
-      });
+    const transporter = getTransporter();
+    const user = process.env.SMTP_USER;
 
-      const fromName = process.env.FROM_NAME || 'NIT BGMI Esports Championship';
-      const fromEmail = process.env.FROM_EMAIL || process.env.SMTP_USER;
+    // If SMTP credentials exist in environment variables and nodemailer is installed, use transporter
+    if (transporter) {
+      const rawFromName = process.env.FROM_NAME || 'BGMI Esports Championship';
+      const cleanFromName = rawFromName.replace(/^["']|["']$/g, '');
+      const fromEmail = process.env.FROM_EMAIL || user;
 
       await transporter.sendMail({
-        from: `"${fromName}" <${fromEmail}>`,
-        to,
+        from: `"${cleanFromName}" <${fromEmail}>`,
+        to: to.trim(),
         subject,
         text,
         html,

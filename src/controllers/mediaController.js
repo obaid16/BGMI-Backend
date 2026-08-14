@@ -88,16 +88,26 @@ const createMedia = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Please provide title, type, team, player, and match context' });
     }
 
-    let imageUrl = req.body.imageUrl || '';
-    let thumbnailUrl = req.body.thumbnail || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80';
+    let imageUrl = req.body.imageUrl || req.body.fileUrl || '';
+    let thumbnailUrl = req.body.thumbnail || imageUrl || '';
     let publicId = '';
 
     // Handle file upload if present
     if (req.file) {
       const uploadResult = await uploadToCloudinaryOrLocal(req.file.path, 'bgmi_media');
       imageUrl = uploadResult.url;
-      thumbnailUrl = uploadResult.thumbnailUrl;
+      thumbnailUrl = uploadResult.thumbnailUrl || uploadResult.url;
       publicId = uploadResult.publicId;
+    }
+
+    // Fallback only if no file, imageUrl, or thumbnail was provided at all
+    if (!thumbnailUrl && !imageUrl) {
+      thumbnailUrl = 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80';
+      imageUrl = thumbnailUrl;
+    } else if (!thumbnailUrl) {
+      thumbnailUrl = imageUrl;
+    } else if (!imageUrl) {
+      imageUrl = thumbnailUrl;
     }
 
     const media = await Media.create({
@@ -108,7 +118,7 @@ const createMedia = async (req, res, next) => {
       match,
       thumbnail: thumbnailUrl,
       videoUrl: videoUrl || undefined,
-      imageUrl: imageUrl || undefined,
+      imageUrl: imageUrl,
       publicId,
       verified: false,
       status: 'Pending Review'

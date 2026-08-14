@@ -26,18 +26,13 @@ const getScoringConfig = (req, res) => {
     success: true,
     data: {
       placementPoints: [
-        { rank: 1, points: SCORING_CONFIG.placementPointsMap[1] },
-        { rank: 2, points: SCORING_CONFIG.placementPointsMap[2] },
-        { rank: 3, points: SCORING_CONFIG.placementPointsMap[3] },
-        { rank: 4, points: SCORING_CONFIG.placementPointsMap[4] },
-        { rank: 5, points: SCORING_CONFIG.placementPointsMap[5] },
-        { rank: 6, points: SCORING_CONFIG.placementPointsMap[6] },
-        { rank: 7, points: SCORING_CONFIG.placementPointsMap[7] },
-        { rank: 8, points: SCORING_CONFIG.placementPointsMap[8] },
-        { rank: '9-16', points: 0 }
+        { rank: 1, points: SCORING_CONFIG.placementPointsMap[1] || 10 },
+        { rank: 2, points: SCORING_CONFIG.placementPointsMap[2] || 8 },
+        { rank: 3, points: SCORING_CONFIG.placementPointsMap[3] || 5 },
+        { rank: '4+', points: 0 }
       ],
       killPointMultiplier: SCORING_CONFIG.killPointMultiplier,
-      bonusRules: '1 Bonus Point for WWCD + 15 Placement Points',
+      bonusRules: '10 Placement Points for WWCD + 1 Point per Kill',
       penaltyRules: '-5 Points for non-compliance with recording / disconnect delay'
     }
   });

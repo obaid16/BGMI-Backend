@@ -79,12 +79,12 @@ async function uploadToCloudinaryOrLocal(filePath, folder = 'bgmi_esports') {
     }
   }
 
-  // Local fallback: Return URL relative to backend server
+  // Local fallback: Return relative URL path so frontend can resolve against backend origin dynamically
   const filename = path.basename(filePath);
-  const serverUrl = `${process.env.BACKEND_URL || 'http://localhost:5000'}/uploads/${filename}`;
+  const relativeUrl = `/uploads/${filename}`;
   return {
-    url: serverUrl,
-    thumbnailUrl: serverUrl,
+    url: relativeUrl,
+    thumbnailUrl: relativeUrl,
     publicId: filename
   };
 }
