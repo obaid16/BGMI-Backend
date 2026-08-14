@@ -49,7 +49,7 @@ const MediaSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending Review', 'Verified', 'Published', 'Rejected'],
+    enum: ['Pending Review', 'Verified', 'Published', 'Approved', 'Rejected'],
     default: 'Pending Review'
   },
   date: {

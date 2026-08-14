@@ -148,7 +148,7 @@ const verifyMedia = async (req, res, next) => {
     }
 
     media.status = status;
-    media.verified = status === 'Verified' || status === 'Published';
+    media.verified = status === 'Verified' || status === 'Published' || status === 'Approved';
     await media.save();
 
     await logAction(`Media Verification: ${status}`, req.user, `Media "${media.title}" status set to ${status}`, id, 'Media');
