@@ -36,7 +36,16 @@ const getMatchById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const match = await Match.findById(id);
+    const isObjectId = id.match(/^[0-9a-fA-F]{24}$/);
+    const matchNum = parseInt(id, 10);
+
+    let match;
+    if (!isNaN(matchNum)) {
+      match = await Match.findOne({ matchNumber: matchNum });
+    }
+    if (!match && isObjectId) {
+      match = await Match.findById(id);
+    }
     if (!match) {
       return res.status(404).json({ success: false, message: 'Match not found' });
     }

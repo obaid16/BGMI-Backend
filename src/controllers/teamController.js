@@ -206,7 +206,16 @@ const getTeamById = async (req, res, next) => {
 
   try {
     const isObjectId = id.match(/^[0-9a-fA-F]{24}$/);
-    const query = isObjectId ? { _id: id } : { registrationId: id };
+    const query = {
+      $or: [
+        { shortName: new RegExp(`^${id}$`, 'i') },
+        { registrationId: id },
+        { name: new RegExp(`^${id}$`, 'i') }
+      ]
+    };
+    if (isObjectId) {
+      query.$or.push({ _id: id });
+    }
 
     const team = await Team.findOne(query);
 

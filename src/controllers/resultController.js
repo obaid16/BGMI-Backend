@@ -31,9 +31,19 @@ const getResultById = async (req, res, next) => {
 
   try {
     const isObjectId = id.match(/^[0-9a-fA-F]{24}$/);
-    const query = isObjectId ? { $or: [{ _id: id }, { matchId: id }] } : { matchId: id };
+    const matchNum = parseInt(id, 10);
+    const queryOr = [];
 
-    const result = await MatchResult.findOne(query);
+    if (!isNaN(matchNum)) {
+      queryOr.push({ matchNumber: matchNum });
+    }
+    if (isObjectId) {
+      queryOr.push({ _id: id });
+      queryOr.push({ matchId: id });
+    }
+    queryOr.push({ matchId: id });
+
+    const result = await MatchResult.findOne({ $or: queryOr });
     if (!result) {
       return res.status(404).json({ success: false, message: 'Result not found' });
     }
