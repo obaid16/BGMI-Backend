@@ -277,8 +277,18 @@ const updateTeamStatus = async (req, res, next) => {
     await team.save();
 
     // Send email notification to captain upon approval or rejection
-    const targetEmail = team.captain?.email || team.captainEmail || team.email;
-    const targetName = team.captain?.name || team.captainName || 'Team Captain';
+    const targetEmail = 
+      (typeof team.captain === 'object' && team.captain?.email) || 
+      team.captainEmail || 
+      team.email || 
+      (Array.isArray(team.players) && team.players.find(p => p.email)?.email) ||
+      (typeof team.captain === 'string' && team.captain.includes('@') ? team.captain : null);
+
+    const targetName = 
+      (typeof team.captain === 'object' && team.captain?.name) || 
+      team.captainName || 
+      (typeof team.captain === 'string' ? team.captain : 'Team Captain');
+
     let emailSent = false;
 
     if (targetEmail) {
