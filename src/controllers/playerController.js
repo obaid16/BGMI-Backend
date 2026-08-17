@@ -218,6 +218,8 @@ const getMVP = async (req, res, next) => {
         team.players.forEach(player => {
           const pKills = Number(player.kills) || 0;
           const pMatches = Number(player.matchesPlayed) || 1;
+          const teamWwcd = Number(team.wwcd) || 0;
+
           playersList.push({
             id: player._id ? player._id.toString() : player.id,
             name: player.name,
@@ -228,6 +230,7 @@ const getMVP = async (req, res, next) => {
             college: team.college,
             role: player.role || 'Assaulter',
             kills: pKills,
+            wwcd: teamWwcd,
             matchesPlayed: pMatches,
             kdRatio: parseFloat((pKills / Math.max(1, pMatches)).toFixed(2)),
             verified: player.verified
@@ -236,7 +239,14 @@ const getMVP = async (req, res, next) => {
       }
     });
 
-    playersList.sort((a, b) => b.kills - a.kills);
+    // 4-Tier Official BGMI Tie-Breaker Order: Kills -> Chicken Dinners (WWCD) -> Fewer Matches -> KD Ratio
+    playersList.sort((a, b) => {
+      if (b.kills !== a.kills) return b.kills - a.kills;
+      if (b.wwcd !== a.wwcd) return b.wwcd - a.wwcd;
+      if (a.matchesPlayed !== b.matchesPlayed) return a.matchesPlayed - b.matchesPlayed;
+      return b.kdRatio - a.kdRatio;
+    });
+
     const topMvp = playersList[0] || null;
 
     res.status(200).json({

@@ -188,7 +188,7 @@ const submitResult = async (req, res, next) => {
       });
     }
 
-    // Update match status to Completed and store winner details
+    // Update match status to Completed and store winner & top fragger details
     match.status = 'Completed';
     match.winner = {
       id: winnerEntry.teamId,
@@ -204,48 +204,57 @@ const submitResult = async (req, res, next) => {
     };
     await match.save();
 
-    // Recalculate team stats for all participating teams in standings
-    // Fetch and aggregate overall points/kills/WWCD for teams and update them in Team collection
-    const participatingTeamIds = processedLeaderboard.map(e => e.teamId);
-    for (const teamId of participatingTeamIds) {
-      const team = await Team.findById(teamId);
-      if (team) {
-        // Count total results for this team
-        const teamResults = await MatchResult.find({ 'leaderboard.teamId': teamId });
-        let totalPoints = 0;
-        let totalKills = 0;
-        let totalWWCD = 0;
-        let matchesPlayed = 0;
+    // Recalculate team stats for all teams in collection to keep standings accurate
+    const allTeams = await Team.find();
+    for (const team of allTeams) {
+      const teamIdStr = team._id.toString();
+      const teamResults = await MatchResult.find({
+        $or: [
+          { 'leaderboard.teamId': teamIdStr },
+          { 'leaderboard.team': team.name }
+        ]
+      });
 
-        teamResults.forEach(tr => {
-          const entry = tr.leaderboard.find(e => e.teamId === teamId);
-          if (entry) {
-            totalPoints += entry.total;
-            totalKills += entry.kills;
-            matchesPlayed += 1;
-            if (entry.rank === 1) {
-              totalWWCD += 1;
-            }
+      let totalPoints = 0;
+      let totalKills = 0;
+      let totalWWCD = 0;
+      let matchesPlayed = 0;
+
+      teamResults.forEach(tr => {
+        const entry = tr.leaderboard.find(e => e.teamId === teamIdStr || e.team === team.name);
+        if (entry) {
+          totalPoints += (entry.total !== undefined ? entry.total : entry.totalPoints || 0);
+          totalKills += (entry.kills !== undefined ? entry.kills : entry.killPts || 0);
+          matchesPlayed += 1;
+          if (entry.rank === 1) {
+            totalWWCD += 1;
           }
-        });
-
-        team.points = totalPoints;
-        team.kills = totalKills;
-        team.wwcd = totalWWCD;
-        team.matchesPlayed = matchesPlayed;
-        
-        // Also split kills among team players dynamically for realism
-        if (team.players && team.players.length > 0) {
-          const playersCount = team.players.length;
-          const avgKillsPerPlayer = Math.floor(totalKills / playersCount);
-          team.players.forEach((p, idx) => {
-            p.kills = avgKillsPerPlayer + (idx === 0 ? totalKills % playersCount : 0);
-            p.kdRatio = matchesPlayed > 0 ? parseFloat((p.kills / matchesPlayed).toFixed(2)) : 0;
-          });
         }
+      });
 
-        await team.save();
+      team.points = totalPoints;
+      team.kills = totalKills;
+      team.wwcd = totalWWCD;
+      team.matchesPlayed = matchesPlayed;
+      
+      // Split kills among team players dynamically for realism
+      if (team.players && team.players.length > 0) {
+        const playersCount = team.players.length;
+        const avgKillsPerPlayer = Math.floor(totalKills / playersCount);
+        team.players.forEach((p, idx) => {
+          p.kills = avgKillsPerPlayer + (idx === 0 ? totalKills % playersCount : 0);
+          p.kdRatio = matchesPlayed > 0 ? parseFloat((p.kills / matchesPlayed).toFixed(2)) : 0;
+        });
       }
+
+      await team.save();
+    }
+
+    // Sort and update ranks for all teams
+    const sortedTeams = await Team.find().sort({ points: -1, wwcd: -1, kills: -1 });
+    for (let i = 0; i < sortedTeams.length; i++) {
+      sortedTeams[i].rank = i + 1;
+      await sortedTeams[i].save();
     }
 
     await logAction('Result Entry Published', req.user, `Results entered for match #${match.matchNumber}`, matchResult._id.toString(), 'Result');
