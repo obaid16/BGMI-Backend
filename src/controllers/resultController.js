@@ -59,7 +59,7 @@ const getResultById = async (req, res, next) => {
  * @access  Private (Admin only)
  */
 const submitResult = async (req, res, next) => {
-  const { matchId, leaderboard, proofs, winnerTeamId } = req.body;
+  const { matchId, leaderboard, proofs, winnerTeamId, mvp } = req.body;
 
   try {
     if (!matchId || !leaderboard || !Array.isArray(leaderboard) || leaderboard.length === 0) {
@@ -130,28 +130,40 @@ const submitResult = async (req, res, next) => {
       };
     }
 
-    // Identify/Generate MVP from the winner team
-    let mvpData = {
-      name: 'Aditya Verma (TITAN_BLAZE)',
-      team: winnerEntry?.teamName || 'Unknown Team',
-      kills: winnerEntry?.kills || 4,
-      damage: 840,
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
-    };
-
-    if (winnerEntry && winnerEntry.teamId) {
+    // Identify MVP from req.body or winner team
+    let mvpData = null;
+    if (mvp && (mvp.name || mvp.ign)) {
+      mvpData = {
+        name: mvp.name || mvp.ign,
+        ign: mvp.ign || mvp.name,
+        team: mvp.team || winnerEntry?.teamName || 'Unknown Team',
+        kills: parseInt(mvp.kills, 10) || 0,
+        damage: (parseInt(mvp.kills, 10) || 0) * 150,
+        avatar: mvp.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
+      };
+    } else if (winnerEntry && winnerEntry.teamId) {
       const winTeam = await Team.findById(winnerEntry.teamId);
       if (winTeam && winTeam.players && winTeam.players.length > 0) {
-        // Pick captain or player with role 'Assaulter' or IGL
         const keyPlayer = winTeam.players.find(p => p.role === 'Assaulter') || winTeam.players[0];
         mvpData = {
-          name: `${keyPlayer.name} (${keyPlayer.ign})`,
+          name: keyPlayer.name,
+          ign: keyPlayer.ign || keyPlayer.name,
           team: winTeam.name,
-          kills: Math.max(winnerEntry.kills - 2, 3), // Realistic kills
+          kills: Math.max(winnerEntry.kills - 2, 3),
           damage: Math.max((winnerEntry.kills - 2) * 150, 450),
           avatar: keyPlayer.avatar
         };
       }
+    }
+
+    if (!mvpData) {
+      mvpData = {
+        name: 'MVP Player',
+        ign: 'MVP',
+        team: winnerEntry?.teamName || 'Team',
+        kills: winnerEntry?.kills || 0,
+        damage: (winnerEntry?.kills || 0) * 150
+      };
     }
 
     if (matchResult) {

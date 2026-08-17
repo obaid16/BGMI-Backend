@@ -335,11 +335,11 @@ const seedDatabase = async () => {
         round: 'Match 2',
         map: 'Livik',
         date: '2026-09-02',
-        winnerTeam: 'GodLike Esports',
-        mvp: { name: 'Obaid Shaikh', ign: 'OBAID (IGL)', team: 'GodLike Esports', kills: 4 },
+        winnerTeam: 'Axions',
+        mvp: { name: 'Kratos', ign: 'AXN-Kratos', team: 'Axions', kills: 7 },
         scores: [
-          { rank: 1, team: 'GodLike Esports', placementPts: 10, kills: 12, killPts: 12, total: 22 },
-          { rank: 2, team: 'Axions', placementPts: 8, kills: 8, killPts: 8, total: 16 },
+          { rank: 1, team: 'Axions', placementPts: 10, kills: 12, killPts: 12, total: 22 },
+          { rank: 2, team: 'GodLike Esports', placementPts: 8, kills: 8, killPts: 8, total: 16 },
           { rank: 3, team: '401 Unauthorized', placementPts: 5, kills: 6, killPts: 6, total: 11 },
           { rank: 4, team: 'Elite Warriors', placementPts: 3, kills: 5, killPts: 5, total: 8 },
           { rank: 5, team: 'FARZ Esports', placementPts: 1, kills: 2, killPts: 2, total: 3 }
