@@ -203,9 +203,58 @@ const deletePlayer = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get overall tournament MVP & fragger rankings
+ * @route   GET /api/mvp
+ * @access  Public
+ */
+const getMVP = async (req, res, next) => {
+  try {
+    const teams = await Team.find({ status: 'Approved' }).lean();
+    const playersList = [];
+
+    teams.forEach(team => {
+      if (team.players && Array.isArray(team.players)) {
+        team.players.forEach(player => {
+          const pKills = Number(player.kills) || 0;
+          const pMatches = Number(player.matchesPlayed) || 1;
+          playersList.push({
+            id: player._id ? player._id.toString() : player.id,
+            name: player.name,
+            ign: player.ign || player.name,
+            teamId: team._id.toString(),
+            teamName: team.name,
+            teamShort: team.shortName,
+            college: team.college,
+            role: player.role || 'Assaulter',
+            kills: pKills,
+            matchesPlayed: pMatches,
+            kdRatio: parseFloat((pKills / Math.max(1, pMatches)).toFixed(2)),
+            verified: player.verified
+          });
+        });
+      }
+    });
+
+    playersList.sort((a, b) => b.kills - a.kills);
+    const topMvp = playersList[0] || null;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        topMvp,
+        players: playersList
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getPlayers,
   getPlayerById,
+  getMVP,
   verifyPlayer,
   updatePlayer,
   deletePlayer

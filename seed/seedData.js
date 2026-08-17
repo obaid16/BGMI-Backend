@@ -156,109 +156,91 @@ const seedDatabase = async () => {
       {
         name: 'GodLike Esports',
         shortName: 'GODL',
-        college: 'NIT Srinagar',
+        college: 'NIT Computer Science Dept',
         logo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
         banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-        captain: { name: 'Jonathan', email: 'jonathan@godl.com', phone: '9876543210' },
-        registrationId: 'BGMI-2026-GODL',
+        captain: { name: 'Obaid Shaikh', email: 'obaid@nitesports.edu', phone: '9876543210' },
+        registrationId: 'GODL-2026',
         status: 'Approved',
         verified: true,
         rank: 1,
         players: [
-          { name: 'Jonathan Amaral', ign: 'GODL-Jonathan', bgmiId: '5129847101', role: 'IGL', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Abhishek Choudhary', ign: 'GODL-Zgod', bgmiId: '5129847102', role: 'Support', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Suraj Nityanand', ign: 'GODL-Neyo', bgmiId: '5129847103', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Vivek Awasthi', ign: 'GODL-Clutchgod', bgmiId: '5129847104', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 }
+          { name: 'Obaid Shaikh', ign: 'OBAID (IGL)', bgmiId: '512938401', role: 'IGL / Assaulter', verified: true, verificationStatus: 'Verified', kills: 10, matchesPlayed: 2, kdRatio: 5.00 },
+          { name: 'Jonathan Amaral', ign: 'GODL-Jonathan', bgmiId: '512938402', role: 'Entry Fragger', verified: true, verificationStatus: 'Verified', kills: 8, matchesPlayed: 2, kdRatio: 4.00 },
+          { name: 'Abhishek Choudhary', ign: 'GODL-Zgod', bgmiId: '512938403', role: 'Support', verified: true, verificationStatus: 'Verified', kills: 5, matchesPlayed: 2, kdRatio: 2.50 },
+          { name: 'Harsh Paudwal', ign: 'GODL-Goblin', bgmiId: '512938404', role: 'Filter Assaulter', verified: true, verificationStatus: 'Verified', kills: 3, matchesPlayed: 2, kdRatio: 1.50 }
         ]
       },
       {
-        name: 'Soul Esports',
-        shortName: 'SOUL',
-        college: 'NIT Srinagar',
-        logo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
+        name: 'Axions',
+        shortName: 'AXN',
+        college: 'NIT Electronics Engineering',
+        logo: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&auto=format&fit=crop&q=80',
         banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-        captain: { name: 'Mavi', email: 'mavi@soul.com', phone: '9876543211' },
-        registrationId: 'BGMI-2026-SOUL',
+        captain: { name: 'Kratos', email: 'kratos@nitesports.edu', phone: '9876543211' },
+        registrationId: 'AXN-2026',
         status: 'Approved',
         verified: true,
         rank: 2,
         players: [
-          { name: 'Harpreet Janjuha', ign: 'SOUL-Mavi', bgmiId: '5129847105', role: 'IGL', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Harsh Paudwal', ign: 'SOUL-Goblin', bgmiId: '5129847106', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Sohail Sheikh', ign: 'SOUL-Hector', bgmiId: '5129847107', role: 'Support', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Akshat Goel', ign: 'SOUL-Akshat', bgmiId: '5129847108', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 }
+          { name: 'Kratos', ign: 'AXN-Kratos', bgmiId: '512938405', role: 'IGL', verified: true, verificationStatus: 'Verified', kills: 7, matchesPlayed: 2, kdRatio: 3.50 },
+          { name: 'Shadow', ign: 'AXN-Shadow', bgmiId: '512938406', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 5, matchesPlayed: 2, kdRatio: 2.50 },
+          { name: 'Viper', ign: 'AXN-Viper', bgmiId: '512938407', role: 'Support', verified: true, verificationStatus: 'Verified', kills: 2, matchesPlayed: 2, kdRatio: 1.00 },
+          { name: 'Snax', ign: 'AXN-Snax', bgmiId: '512938408', role: 'Sniper', verified: true, verificationStatus: 'Verified', kills: 1, matchesPlayed: 2, kdRatio: 0.50 }
         ]
       },
       {
-        name: 'Team X Spark',
-        shortName: 'TXS',
-        college: 'NIT Srinagar',
-        logo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
+        name: 'Elite Warriors',
+        shortName: 'ELT',
+        college: 'NIT Mechanical Dept',
+        logo: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=200&auto=format&fit=crop&q=80',
         banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-        captain: { name: 'Scout', email: 'scout@txs.com', phone: '9876543212' },
-        registrationId: 'BGMI-2026-TXS',
+        captain: { name: 'Naman Mathur', email: 'mortal@nitesports.edu', phone: '9876543212' },
+        registrationId: 'ELT-2026',
         status: 'Approved',
         verified: true,
         rank: 3,
         players: [
-          { name: 'Tanmay Singh', ign: 'TXS-Scout', bgmiId: '5129847109', role: 'IGL', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Aditya Mathe', ign: 'TXS-Aditya', bgmiId: '5129847110', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Pukar Singla', ign: 'TXS-Pukar', bgmiId: '5129847111', role: 'Support', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Sarangajyoti Deka', ign: 'TXS-Sarang', bgmiId: '5129847112', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 }
+          { name: 'Naman Mathur', ign: 'ELT-Mortal', bgmiId: '512938409', role: 'IGL / Support', verified: true, verificationStatus: 'Verified', kills: 6, matchesPlayed: 2, kdRatio: 3.00 },
+          { name: 'Tanmay Singh', ign: 'ELT-Scout', bgmiId: '512938410', role: 'Entry Fragger', verified: true, verificationStatus: 'Verified', kills: 4, matchesPlayed: 2, kdRatio: 2.00 },
+          { name: 'Siddharth Joshi', ign: 'ELT-Regaltos', bgmiId: '512938411', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 3, matchesPlayed: 2, kdRatio: 1.50 },
+          { name: 'Vivek Awasthi', ign: 'ELT-ClutchGod', bgmiId: '512938412', role: 'Filter', verified: true, verificationStatus: 'Verified', kills: 1, matchesPlayed: 2, kdRatio: 0.50 }
         ]
       },
       {
-        name: 'Global Esports',
-        shortName: 'GE',
-        college: 'NIT Srinagar',
-        logo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
+        name: '401 Unauthorized',
+        shortName: '401',
+        college: 'NIT Information Technology',
+        logo: 'https://images.unsplash.com/photo-1560253023-3ec5d502959f?w=200&auto=format&fit=crop&q=80',
         banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-        captain: { name: 'Manya', email: 'manya@ge.com', phone: '9876543213' },
-        registrationId: 'BGMI-2026-GE',
+        captain: { name: 'CyberDev', email: 'cyber@nitesports.edu', phone: '9876543213' },
+        registrationId: '401-2026',
         status: 'Approved',
         verified: true,
         rank: 4,
         players: [
-          { name: 'Mohammad Raja', ign: 'GE-Manya', bgmiId: '5129847113', role: 'IGL', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Nakul Sharma', ign: 'GE-Nakul', bgmiId: '5129847114', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Joker Singh', ign: 'GE-Joker', bgmiId: '5129847115', role: 'Support', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Rony Bhagat', ign: 'GE-Rony', bgmiId: '5129847116', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 }
+          { name: 'CyberDev', ign: '401-Cyber', bgmiId: '512938413', role: 'IGL', verified: true, verificationStatus: 'Verified', kills: 4, matchesPlayed: 2, kdRatio: 2.00 },
+          { name: 'Kernel', ign: '401-Kernel', bgmiId: '512938414', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 3, matchesPlayed: 2, kdRatio: 1.50 },
+          { name: 'Root', ign: '401-Root', bgmiId: '512938415', role: 'Support', verified: true, verificationStatus: 'Verified', kills: 2, matchesPlayed: 2, kdRatio: 1.00 },
+          { name: 'Buffer', ign: '401-Buffer', bgmiId: '512938416', role: 'Sniper', verified: true, verificationStatus: 'Verified', kills: 1, matchesPlayed: 2, kdRatio: 0.50 }
         ]
       },
       {
-        name: 'Revenant Esports',
-        shortName: 'RNT',
-        college: 'NIT Srinagar',
-        logo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
+        name: 'FARZ Esports',
+        shortName: 'FRZ',
+        college: 'NIT Civil Engineering',
+        logo: 'https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?w=200&auto=format&fit=crop&q=80',
         banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-        captain: { name: 'Sensei', email: 'sensei@rnt.com', phone: '9876543214' },
-        registrationId: 'BGMI-2026-RNT',
+        captain: { name: 'Farzan', email: 'farzan@nitesports.edu', phone: '9876543214' },
+        registrationId: 'FRZ-2026',
         status: 'Approved',
         verified: true,
         rank: 5,
         players: [
-          { name: 'Deepak Negi', ign: 'RNT-Sensei', bgmiId: '5129847117', role: 'IGL', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Harshit Yadav', ign: 'RNT-MJ', bgmiId: '5129847118', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Fierce Singh', ign: 'RNT-Fierce', bgmiId: '5129847119', role: 'Support', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Paradox Sharma', ign: 'RNT-Paradox', bgmiId: '5129847120', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 }
-        ]
-      },
-      {
-        name: '8Bit Esports',
-        shortName: '8BIT',
-        college: 'NIT Srinagar',
-        logo: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
-        banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-        captain: { name: 'Juicy', email: 'juicy@8bit.com', phone: '9876543215' },
-        registrationId: 'BGMI-2026-8BIT',
-        status: 'Approved',
-        verified: true,
-        rank: 6,
-        players: [
-          { name: 'Juicy Verma', ign: '8BIT-Juicy', bgmiId: '5129847121', role: 'IGL', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Mighty Singh', ign: '8BIT-Mighty', bgmiId: '5129847122', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Madman Sharma', ign: '8BIT-Madman', bgmiId: '5129847123', role: 'Support', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 },
-          { name: 'Beast Verma', ign: '8BIT-Beast', bgmiId: '5129847124', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 0, kdRatio: 0 }
+          { name: 'Farzan', ign: 'FRZ-Farzan', bgmiId: '512938417', role: 'IGL', verified: true, verificationStatus: 'Verified', kills: 2, matchesPlayed: 2, kdRatio: 1.00 },
+          { name: 'Apex', ign: 'FRZ-Apex', bgmiId: '512938418', role: 'Assaulter', verified: true, verificationStatus: 'Verified', kills: 1, matchesPlayed: 2, kdRatio: 0.50 },
+          { name: 'Titan', ign: 'FRZ-Titan', bgmiId: '512938419', role: 'Support', verified: true, verificationStatus: 'Verified', kills: 1, matchesPlayed: 2, kdRatio: 0.50 },
+          { name: 'Blaze', ign: 'FRZ-Blaze', bgmiId: '512938420', role: 'Sniper', verified: true, verificationStatus: 'Verified', kills: 1, matchesPlayed: 2, kdRatio: 0.50 }
         ]
       }
     ];
@@ -299,12 +281,12 @@ const seedDatabase = async () => {
       },
       {
         matchNumber: 3,
-        title: 'Match #3 — Erangel',
+        title: 'Match #3 — Livik',
         round: 'Match 3',
-        map: 'Erangel',
+        map: 'Livik',
         date: '2026-09-02',
         time: '03:30 PM',
-        status: 'Upcoming',
+        status: 'Live',
         teamsCount: participatingTeamsFormatted.length,
         participatingTeams: participatingTeamsFormatted
       },
@@ -339,30 +321,28 @@ const seedDatabase = async () => {
         map: 'Erangel',
         date: '2026-09-02',
         winnerTeam: 'GodLike Esports',
-        mvp: { name: 'GODL-Jonathan', team: 'GodLike Esports', kills: 5 },
+        mvp: { name: 'Obaid Shaikh', ign: 'OBAID (IGL)', team: 'GodLike Esports', kills: 6 },
         scores: [
-          { rank: 1, team: 'GodLike Esports', placementPts: 15, kills: 8, killPts: 8, total: 23 },
-          { rank: 2, team: 'Soul Esports', placementPts: 12, kills: 6, killPts: 6, total: 18 },
-          { rank: 3, team: 'Team X Spark', placementPts: 10, kills: 4, killPts: 4, total: 14 },
-          { rank: 4, team: 'Global Esports', placementPts: 8, kills: 5, killPts: 5, total: 13 },
-          { rank: 5, team: 'Revenant Esports', placementPts: 6, kills: 2, killPts: 2, total: 8 },
-          { rank: 6, team: '8Bit Esports', placementPts: 4, kills: 3, killPts: 3, total: 7 }
+          { rank: 1, team: 'GodLike Esports', placementPts: 10, kills: 14, killPts: 14, total: 24 },
+          { rank: 2, team: 'Elite Warriors', placementPts: 8, kills: 9, killPts: 9, total: 17 },
+          { rank: 3, team: 'Axions', placementPts: 5, kills: 7, killPts: 7, total: 12 },
+          { rank: 4, team: '401 Unauthorized', placementPts: 3, kills: 4, killPts: 4, total: 7 },
+          { rank: 5, team: 'FARZ Esports', placementPts: 1, kills: 3, killPts: 3, total: 4 }
         ]
       },
       {
         matchNumber: 2,
         round: 'Match 2',
         map: 'Livik',
-        date: '2026-08-08',
-        winnerTeam: 'Soul Esports',
-        mvp: { name: 'SOUL-Goblin', team: 'Soul Esports', kills: 6 },
+        date: '2026-09-02',
+        winnerTeam: 'GodLike Esports',
+        mvp: { name: 'Obaid Shaikh', ign: 'OBAID (IGL)', team: 'GodLike Esports', kills: 4 },
         scores: [
-          { rank: 1, team: 'Soul Esports', placementPts: 15, kills: 10, killPts: 10, total: 25 },
-          { rank: 2, team: 'GodLike Esports', placementPts: 12, kills: 5, killPts: 5, total: 17 },
-          { rank: 3, team: 'Global Esports', placementPts: 10, kills: 6, killPts: 6, total: 16 },
-          { rank: 4, team: 'Team X Spark', placementPts: 8, kills: 3, killPts: 3, total: 11 },
-          { rank: 5, team: '8Bit Esports', placementPts: 6, kills: 4, killPts: 4, total: 10 },
-          { rank: 6, team: 'Revenant Esports', placementPts: 4, kills: 2, killPts: 2, total: 6 }
+          { rank: 1, team: 'GodLike Esports', placementPts: 10, kills: 12, killPts: 12, total: 22 },
+          { rank: 2, team: 'Axions', placementPts: 8, kills: 8, killPts: 8, total: 16 },
+          { rank: 3, team: '401 Unauthorized', placementPts: 5, kills: 6, killPts: 6, total: 11 },
+          { rank: 4, team: 'Elite Warriors', placementPts: 3, kills: 5, killPts: 5, total: 8 },
+          { rank: 5, team: 'FARZ Esports', placementPts: 1, kills: 2, killPts: 2, total: 3 }
         ]
       }
     ];

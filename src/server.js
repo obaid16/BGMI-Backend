@@ -66,6 +66,8 @@ app.use('/api/players', require('./routes/playerRoutes'));
 app.use('/api/matches', require('./routes/matchRoutes'));
 app.use('/api/results', require('./routes/resultRoutes'));
 app.use('/api/standings', require('./routes/standingsRoutes'));
+app.use('/api/mvp', require('./routes/mvpRoutes'));
+app.use('/api/tournament', require('./routes/tournamentRoutes'));
 app.use('/api/media', require('./routes/mediaRoutes'));
 app.use('/api/announcements', require('./routes/announcementRoutes'));
 app.use('/api/rules', require('./routes/ruleRoutes'));
