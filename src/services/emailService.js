@@ -1,8 +1,9 @@
 /**
- * Centralized Email Service for NIT BGMI Championship using Nodemailer Gmail SMTP
- * Sends real email notifications to ANY recipient (students, players, captains) without needing a domain!
+ * Centralized Dual-Engine Email Service for NIT BGMI Championship
+ * Supports Resend API over HTTPS (Port 443 - Cloud Compatible) with automatic Nodemailer Gmail SMTP fallback!
  */
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const {
   registrationConfirmationTemplate,
   registrationApprovalTemplate,
@@ -12,6 +13,9 @@ const {
   tournamentUpdateEmailTemplate,
   adminNotificationEmailTemplate
 } = require('../emails/emailTemplates');
+
+const resendApiKey = process.env.RESEND_API_KEY;
+const resendClient = resendApiKey && resendApiKey.startsWith('re_') ? new Resend(resendApiKey) : null;
 
 let pooledTransporter = null;
 
@@ -26,12 +30,12 @@ function getTransporter() {
   pooledTransporter = nodemailer.createTransport({
     host,
     port,
-    secure: false, // port 587 STARTTLS
+    secure: false,
     auth: { user, pass },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-    family: 4, // Force IPv4 to prevent Render cloud IPv6 ENETUNREACH error
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 8000,
+    family: 4,
     tls: { rejectUnauthorized: false }
   });
 
@@ -39,54 +43,70 @@ function getTransporter() {
 }
 
 /**
- * Generic helper to send email with Nodemailer SMTP and clean error handling
+ * Universal helper to send email with Resend API over HTTPS (Port 443) & Nodemailer SMTP fallback
  */
-async function sendSmtpMail({ to, subject, html, text }) {
+async function sendMail({ to, subject, html, text }) {
   if (!to || typeof to !== 'string' || !to.includes('@')) {
     console.warn('[EMAIL] Recipient email is invalid or missing:', to);
     return { success: false, error: 'Invalid recipient email' };
   }
 
   const cleanRecipient = to.trim();
-  const transporter = getTransporter();
-  const user = process.env.SMTP_USER || 'obaidullahshaikh07@gmail.com';
-  const fromName = process.env.FROM_NAME || 'NIT BGMI Championship';
-  const cleanFromName = fromName.replace(/^["']|["']$/g, '');
-  const fromEmail = process.env.FROM_EMAIL || user;
+  const fromName = (process.env.FROM_NAME || 'NIT BGMI Championship').replace(/^["']|["']$/g, '');
+  const fromEmail = process.env.EMAIL_FROM || process.env.FROM_EMAIL || 'onboarding@resend.dev';
 
+  // 1. TRY RESEND API FIRST OVER HTTPS (Port 443 - Cloud Safe)
+  if (resendClient) {
+    try {
+      console.log(`[EMAIL] Sending email via Resend API (HTTPS): "${subject}" to ${cleanRecipient}...`);
+      const { data, error } = await resendClient.emails.send({
+        from: `${fromName} <${fromEmail.includes('@') ? fromEmail : 'onboarding@resend.dev'}>`,
+        to: [cleanRecipient],
+        subject,
+        html,
+        ...(text && { text })
+      });
+
+      if (!error && data?.id) {
+        console.log(`[EMAIL] Resend API Sent Successfully! Message ID: ${data.id}`);
+        return { success: true, messageId: data.id, provider: 'resend' };
+      }
+      if (error) {
+        console.warn(`[EMAIL] Resend API Notice: ${error.message || JSON.stringify(error)}. Falling back to Nodemailer SMTP...`);
+      }
+    } catch (resendErr) {
+      console.warn(`[EMAIL] Resend API error: ${resendErr.message}. Falling back to Nodemailer SMTP...`);
+    }
+  }
+
+  // 2. FALLBACK TO NODEMAILER GMAIL SMTP
   try {
-    console.log(`[EMAIL] Sending email: "${subject}"...`);
-    console.log(`[EMAIL] Recipient: ${cleanRecipient}`);
+    console.log(`[EMAIL] Sending email via Nodemailer SMTP: "${subject}" to ${cleanRecipient}...`);
+    const transporter = getTransporter();
+    const user = process.env.SMTP_USER || 'obaidullahshaikh07@gmail.com';
 
     const mailPromise = transporter.sendMail({
-      from: `"${cleanFromName}" <${fromEmail}>`,
+      from: `"${fromName}" <${user}>`,
       to: cleanRecipient,
       subject,
-      text,
+      text: text || `Hello! Your BGMI Esports update for ${subject} is confirmed.`,
       html,
-      headers: {
-        'X-Priority': '1',
-        'X-MSMail-Priority': 'High',
-        'Importance': 'high',
-        'X-Mailer': 'NIT BGMI Esports Tournament Engine',
-        'Reply-To': fromEmail
-      }
+      replyTo: user
     });
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('SMTP send mail operation timed out after 10s')), 10000)
+      setTimeout(() => reject(new Error('SMTP send mail operation timed out after 8s')), 8000)
     );
 
     const info = await Promise.race([mailPromise, timeoutPromise]);
 
-    console.log(`[EMAIL] Sent successfully`);
-    console.log(`[EMAIL] Message ID: ${info?.messageId || 'OK'}`);
-    return { success: true, messageId: info?.messageId };
+    console.log(`[EMAIL] Nodemailer SMTP Sent Successfully! Message ID: ${info?.messageId || 'OK'}`);
+    return { success: true, messageId: info?.messageId, provider: 'smtp' };
 
-  } catch (err) {
+  } catch (smtpErr) {
     console.error(`[EMAIL] Failed to send email to ${cleanRecipient}`);
-    console.error(`[EMAIL] Error: ${err.message}`);
-    return { success: false, error: err.message };
+    console.error(`[EMAIL] Error: ${smtpErr.message}`);
+    return { success: false, error: smtpErr.message };
   }
 }
 
@@ -103,7 +123,7 @@ async function sendRegistrationConfirmation({ to, captainName, teamName, registr
     playersCount
   });
 
-  return sendSmtpMail({
+  return sendMail({
     to,
     subject: `🎮 Squad Registration Received: ${teamName} (${registrationId})`,
     html
@@ -120,7 +140,7 @@ async function sendRegistrationApproval({ to, captainName, teamName, registratio
     registrationId
   });
 
-  return sendSmtpMail({
+  return sendMail({
     to,
     subject: `🎉 Squad Approved — ${teamName} (${registrationId})`,
     html
@@ -138,7 +158,7 @@ async function sendRegistrationRejection({ to, captainName, teamName, registrati
     rejectionReason
   });
 
-  return sendSmtpMail({
+  return sendMail({
     to,
     subject: `❌ Squad Registration Update — ${teamName} (${registrationId})`,
     html
@@ -151,7 +171,7 @@ async function sendRegistrationRejection({ to, captainName, teamName, registrati
 async function sendOtpEmail({ to, userName, otpCode }) {
   const html = otpEmailTemplate({ userName, otpCode });
 
-  return sendSmtpMail({
+  return sendMail({
     to,
     subject: `🔐 Your Security OTP Code: ${otpCode}`,
     html
@@ -172,7 +192,7 @@ async function sendMatchLobbyEmail({ to, captainName, teamName, matchTitle, room
     slotNumber
   });
 
-  return sendSmtpMail({
+  return sendMail({
     to,
     subject: `🎮 Custom Room Credentials: ${matchTitle || 'BGMI Match'}`,
     html
@@ -190,7 +210,7 @@ async function sendTournamentUpdateEmail({ to, recipientName, title, message, ac
     actionUrl
   });
 
-  return sendSmtpMail({
+  return sendMail({
     to,
     subject: `📢 Tournament Update: ${title}`,
     html
@@ -203,7 +223,7 @@ async function sendTournamentUpdateEmail({ to, recipientName, title, message, ac
 async function sendAdminNotificationEmail({ to, subject, details }) {
   const html = adminNotificationEmailTemplate({ subject, details });
 
-  return sendSmtpMail({
+  return sendMail({
     to,
     subject: `🚨 Admin Alert: ${subject}`,
     html
