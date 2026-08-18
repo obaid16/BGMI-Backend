@@ -27,11 +27,14 @@ function getTransporter() {
   const pass = process.env.SMTP_PASS || 'socylrasnkuoqlgr';
 
   pooledTransporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,
     auth: { user, pass },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 15000
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+    tls: { rejectUnauthorized: false }
   });
 
   return pooledTransporter;
