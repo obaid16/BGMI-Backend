@@ -24,22 +24,35 @@ function getTransporter() {
   const pass = process.env.SMTP_PASS;
   const port = Number(process.env.SMTP_PORT) || 587;
 
-  if (nodemailer && host && user) {
-    pooledTransporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: process.env.SMTP_SECURE === 'true' || port === 465,
-      pool: true,
-      maxConnections: 5,
-      maxMessages: 100,
-      auth: {
-        user,
-        pass
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
+  if (nodemailer && user && pass) {
+    if (host && host.includes('gmail.com')) {
+      pooledTransporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user,
+          pass
+        },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 8000
+      });
+    } else if (host) {
+      pooledTransporter = nodemailer.createTransport({
+        host,
+        port,
+        secure: process.env.SMTP_SECURE === 'true' || port === 465,
+        auth: {
+          user,
+          pass
+        },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 8000,
+        tls: {
+          rejectUnauthorized: false
+        }
+      });
+    }
   }
 
   return pooledTransporter;
@@ -61,7 +74,8 @@ const sendEmail = async ({ to, subject, html, text }) => {
       const cleanFromName = rawFromName.replace(/^["']|["']$/g, '');
       const fromEmail = process.env.FROM_EMAIL || user;
 
-      await transporter.sendMail({
+      // 10-second max timeout guard for sending mail
+      const mailPromise = transporter.sendMail({
         from: `"${cleanFromName}" <${fromEmail}>`,
         to: to.trim(),
         subject,
@@ -75,6 +89,12 @@ const sendEmail = async ({ to, subject, html, text }) => {
           'Reply-To': fromEmail
         }
       });
+
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('SMTP send mail operation timed out after 10s')), 10000)
+      );
+
+      await Promise.race([mailPromise, timeoutPromise]);
       console.log(`[EMAIL DISPATCHED VIA SMTP] To: ${to} | Subject: ${subject}`);
     } else {
       // Clean console log fallback when SMTP is not configured locally
