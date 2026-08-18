@@ -1,7 +1,12 @@
+const mongoose = require('mongoose');
 const Team = require('../models/Team');
 const generateRegistrationId = require('../utils/generateRegistrationId');
 const logAction = require('../utils/auditLogger');
-const sendEmail = require('../utils/sendEmail');
+const {
+  sendRegistrationConfirmation,
+  sendRegistrationApproval,
+  sendRegistrationRejection
+} = require('../services/emailService');
 
 /**
  * @desc    Public multi-step registration for college teams
@@ -10,11 +15,22 @@ const sendEmail = require('../utils/sendEmail');
  */
 const registerTeam = async (req, res, next) => {
   try {
-    const { teamName, collegeName, teamLogo, captainName, captainEmail, captainPhone, players } = req.body;
+    const rawTeamName = req.body.teamName || req.body.name;
+    const rawCaptainName = req.body.captainName || (typeof req.body.captain === 'object' ? req.body.captain?.name : req.body.captain);
+    const rawCaptainEmail = req.body.captainEmail || (typeof req.body.captain === 'object' ? req.body.captain?.email : null) || req.body.email;
+    const rawCaptainPhone = req.body.captainPhone || (typeof req.body.captain === 'object' ? req.body.captain?.phone : null) || req.body.phone;
+    const rawCollegeName = req.body.collegeName || req.body.college;
+    const { teamLogo, players } = req.body;
 
-    if (!teamName || !captainName || !captainEmail || !captainPhone) {
+    if (!rawTeamName || !rawCaptainName || !rawCaptainEmail || !rawCaptainPhone) {
       return res.status(400).json({ success: false, message: 'Please provide all required team and captain details' });
     }
+
+    const cleanTeamName = String(rawTeamName).trim();
+    const cleanCaptainName = String(rawCaptainName).trim();
+    const cleanCaptainEmail = String(rawCaptainEmail).trim();
+    const cleanCaptainPhone = String(rawCaptainPhone).trim();
+    const cleanCollegeName = rawCollegeName ? String(rawCollegeName).trim() : 'In-House College Squad';
 
     if (!players || !Array.isArray(players) || players.length < 4) {
       return res.status(400).json({ success: false, message: 'Roster must contain at least 4 players' });
@@ -23,7 +39,7 @@ const registerTeam = async (req, res, next) => {
     // Check for duplicate team name safely
     let existingTeamName = null;
     try {
-      existingTeamName = await Team.findOne({ name: teamName });
+      existingTeamName = await Team.findOne({ name: cleanTeamName });
     } catch (dbErr) {
       console.warn('[DB NOTICE] Duplicate team check bypassed due to DB state:', dbErr.message);
     }
@@ -53,32 +69,32 @@ const registerTeam = async (req, res, next) => {
       ign: p.ign || p.name || `Player_0${idx + 1}`,
       bgmiId: p.bgmiId || `BGMI_${Date.now()}_${idx + 1}`,
       role: p.role || 'Support',
-      verified: false,
+      verified: true,
       avatar: p.photo || p.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       studentProof: p.studentProof || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
-      verificationStatus: p.verificationStatus || 'Pending Verification',
+      verificationStatus: 'Verified',
       kills: 0,
       kdRatio: 0.0
     }));
 
-    const shortName = teamName.substring(0, 5).toUpperCase();
+    const shortName = cleanTeamName.substring(0, 5).toUpperCase();
 
     let team = null;
     try {
       team = await Team.create({
-        name: teamName,
+        name: cleanTeamName,
         shortName,
-        college: collegeName || 'In-House College Squad',
+        college: cleanCollegeName,
         logo: teamLogo || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
         banner: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
         captain: {
-          name: captainName,
-          email: captainEmail,
-          phone: captainPhone
+          name: cleanCaptainName,
+          email: cleanCaptainEmail,
+          phone: cleanCaptainPhone
         },
         registrationId,
-        status: 'Pending',
-        verified: false,
+        status: 'Approved',
+        verified: true,
         players: formattedPlayers
       });
 
@@ -87,12 +103,13 @@ const registerTeam = async (req, res, next) => {
     } catch (dbErr) {
       console.error('[DB NOTICE] Could not persist team record to MongoDB:', dbErr.message);
       team = {
-        name: teamName,
+        name: cleanTeamName,
         shortName,
-        college: collegeName || 'In-House College Squad',
-        captain: { name: captainName, email: captainEmail, phone: captainPhone },
+        college: cleanCollegeName,
+        captain: { name: cleanCaptainName, email: cleanCaptainEmail, phone: cleanCaptainPhone },
         registrationId,
-        status: 'Pending',
+        status: 'Approved',
+        verified: true,
         players: formattedPlayers
       };
     }
@@ -103,58 +120,38 @@ const registerTeam = async (req, res, next) => {
       message: 'Team registered successfully',
       data: {
         registrationId,
-        status: 'Pending',
+        status: 'Approved',
         team
       }
     });
 
-    // Send Instant Registration Confirmation Email to Captain asynchronously
-    if (captainEmail) {
-      sendEmail({
-        to: captainEmail,
-        subject: `🎮 Squad Registration Received: ${teamName} (ID: ${registrationId})`,
-        text: `Hello ${captainName},\n\nThank you for registering your squad "${teamName}" for the BGMI Esports Championship 2026!\n\nRegistration ID: ${registrationId}\nStatus: Under Verification\n\nOur tournament admins are currently reviewing your player roster and student proofs. Once verified, your status will update to APPROVED and you will receive custom room lobby details.\n\nBest of luck!`,
-        html: `
-        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #0a0b0e; color: #f4f5f8; padding: 32px 20px; border-radius: 8px; max-width: 600px; margin: 0 auto; border: 1px solid rgba(255,255,255,0.1);">
-          <div style="text-align: center; padding-bottom: 20px; border-b: 1px solid rgba(255,255,255,0.1);">
-            <h1 style="font-size: 22px; font-weight: 900; color: #ffffff; letter-spacing: 2px; margin: 0;">BGMI ESPORTS CHAMPIONSHIP</h1>
-            <p style="font-size: 11px; color: #e50914; font-weight: 700; letter-spacing: 3px; margin-top: 4px; text-transform: uppercase;">Official Registration Confirmation</p>
-          </div>
-
-          <div style="padding: 24px 0; space-y: 16px;">
-            <p style="font-size: 15px; color: #e2e8f0; margin-bottom: 16px;">Hello <strong>${captainName}</strong>,</p>
-            <p style="font-size: 14px; color: #94a3b8; line-height: 1.6;">
-              Your squad <strong style="color: #ffffff;">"${teamName}"</strong> has successfully registered for the <strong>BGMI Esports Championship 2026</strong>.
-            </p>
-
-            <div style="background-color: #12141c; padding: 20px; border-radius: 6px; border-left: 4px solid #e50914; margin: 20px 0;">
-              <p style="margin: 0; font-size: 10px; color: #c8aa6e; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px;">Registration Reference ID</p>
-              <p style="margin: 6px 0 0 0; font-size: 26px; font-weight: 900; color: #ffffff; letter-spacing: 2px;">${registrationId}</p>
-              <p style="margin: 6px 0 0 0; font-size: 11px; color: #94a3b8;">Status: <span style="color: #fbbf24; font-weight: bold;">● UNDER VERIFICATION</span></p>
-            </div>
-
-            <div style="background-color: #12141c; padding: 16px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
-              <h3 style="font-size: 12px; color: #c8aa6e; text-transform: uppercase; margin: 0 0 10px 0; letter-spacing: 1px;">Registered Squad Details</h3>
-              <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>College / Campus:</strong> ${collegeName || 'Campus'}</p>
-              <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>Captain Phone:</strong> ${captainPhone}</p>
-              <p style="font-size: 13px; color: #cbd5e1; margin: 4px 0;"><strong>Roster Players:</strong> ${players.length} Players Submitted</p>
-            </div>
-
-            <p style="font-size: 13px; color: #94a3b8; line-height: 1.5;">
-              Our admin panel is currently reviewing your player student verification IDs. Once verified, you will receive an official Approval notification with Custom Room credentials.
-            </p>
-          </div>
-
-          <div style="text-align: center; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 11px; color: #64748b;">
-            <p style="margin: 0;">BGMI Esports Committee • Tournament Operations</p>
-            <p style="margin: 4px 0 0 0;">This is an automated message. Please keep your Registration ID secure.</p>
-          </div>
-        </div>
-        `
-      }).catch(err => {
-        console.error('Error sending registration confirmation email asynchronously:', err.message);
+    // Collect recipient emails (captain email + player emails)
+    const recipientEmails = new Set();
+    if (cleanCaptainEmail && cleanCaptainEmail.includes('@')) {
+      recipientEmails.add(cleanCaptainEmail);
+    }
+    if (players && Array.isArray(players)) {
+      players.forEach(p => {
+        if (p.email && typeof p.email === 'string' && p.email.includes('@')) {
+          recipientEmails.add(p.email.trim());
+        }
       });
     }
+
+    // Dispatch confirmation email to all collected emails asynchronously
+    recipientEmails.forEach(targetEmail => {
+      sendRegistrationConfirmation({
+        to: targetEmail,
+        captainName: cleanCaptainName,
+        teamName: cleanTeamName,
+        registrationId,
+        collegeName: cleanCollegeName,
+        captainPhone: cleanCaptainPhone,
+        playersCount: players ? players.length : 4
+      }).catch(err => {
+        console.error(`[EMAIL] Registration confirmation error for ${targetEmail}:`, err.message);
+      });
+    });
 
   } catch (error) {
     next(error);
@@ -264,7 +261,13 @@ const updateTeamStatus = async (req, res, next) => {
   const { status, rejectionReason } = req.body;
 
   try {
-    const team = await Team.findById(id);
+    let team = null;
+    if (mongoose.isValidObjectId(id)) {
+      team = await Team.findById(id);
+    }
+    if (!team) {
+      team = await Team.findOne({ registrationId: id });
+    }
 
     if (!team) {
       return res.status(404).json({ success: false, message: 'Team not found' });
@@ -298,63 +301,62 @@ const updateTeamStatus = async (req, res, next) => {
 
     await team.save();
 
-    // Send email notification to captain upon approval or rejection
-    const targetEmail = 
-      (typeof team.captain === 'object' && team.captain?.email) || 
-      team.captainEmail || 
-      team.email || 
-      (Array.isArray(team.players) && team.players.find(p => p.email)?.email) ||
-      (typeof team.captain === 'string' && team.captain.includes('@') ? team.captain : null);
+    // Collect all candidate recipient emails (captain email + player emails)
+    const recipientEmails = new Set();
+    if (typeof team.captain === 'object' && team.captain?.email && team.captain.email.includes('@')) {
+      recipientEmails.add(team.captain.email.trim());
+    }
+    if (team.captainEmail && typeof team.captainEmail === 'string' && team.captainEmail.includes('@')) {
+      recipientEmails.add(team.captainEmail.trim());
+    }
+    if (team.email && typeof team.email === 'string' && team.email.includes('@')) {
+      recipientEmails.add(team.email.trim());
+    }
+    if (Array.isArray(team.players)) {
+      team.players.forEach(p => {
+        if (p.email && typeof p.email === 'string' && p.email.includes('@')) {
+          recipientEmails.add(p.email.trim());
+        }
+      });
+    }
 
-    const targetName = 
+    const captainName = 
       (typeof team.captain === 'object' && team.captain?.name) || 
       team.captainName || 
       (typeof team.captain === 'string' ? team.captain : 'Team Captain');
 
     let emailSent = false;
 
-    if (targetEmail) {
-      try {
+    if (recipientEmails.size > 0) {
+      recipientEmails.forEach(targetEmail => {
         if (status === 'Approved') {
-          emailSent = await sendEmail({
+          sendRegistrationApproval({
             to: targetEmail,
-            subject: `🎉 Squad Registration Approved — ${team.name} (${team.registrationId})`,
-            text: `Hello ${targetName},\n\nCongratulations! Your squad "${team.name}" (Registration ID: ${team.registrationId}) has been officially VERIFIED AND APPROVED by the tournament admin team for the BGMI Esports Championship 2026.\n\nPlease keep your Registration ID handy for custom room lobby entry.\n\nBest of luck!`,
-            html: `<div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #ffffff; padding: 24px; border-radius: 12px; max-width: 600px;">
-              <h2 style="color: #fbbf24; margin-bottom: 12px;">🎉 Squad Registration Approved!</h2>
-              <p style="font-size: 14px; color: #cbd5e1;">Hello <strong>${targetName}</strong>,</p>
-              <p style="font-size: 14px; color: #cbd5e1;">Congratulations! Your squad <strong>"${team.name}"</strong> has been officially verified and approved for the <strong>BGMI Esports Championship 2026</strong>.</p>
-              <div style="background-color: #1e293b; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid #fbbf24;">
-                <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase;">Official Registration ID</p>
-                <p style="margin: 4px 0 0 0; font-size: 24px; font-weight: bold; color: #fbbf24; letter-spacing: 2px;">${team.registrationId}</p>
-              </div>
-              <p style="font-size: 13px; color: #94a3b8;">Please stay tuned to the match schedule for upcoming custom room lobby launch times.</p>
-            </div>`
+            captainName,
+            teamName: team.name,
+            registrationId: team.registrationId
+          }).then(res => {
+            if (res && res.success) emailSent = true;
+          }).catch(err => {
+            console.error(`[EMAIL] Approval email error for ${targetEmail}:`, err.message);
           });
         } else if (status === 'Rejected') {
-          emailSent = await sendEmail({
+          sendRegistrationRejection({
             to: targetEmail,
-            subject: `❌ Squad Registration Update — ${team.name} (${team.registrationId})`,
-            text: `Hello ${targetName},\n\nYour squad application for "${team.name}" (Registration ID: ${team.registrationId}) has been reviewed by the tournament admin team and was REJECTED.\n\nReason: ${rejectionReason || 'Documents or roster details incomplete'}\n\nPlease contact tournament support if you believe this is an error.`,
-            html: `<div style="font-family: Arial, sans-serif; background-color: #0f172a; color: #ffffff; padding: 24px; border-radius: 12px; max-width: 600px;">
-              <h2 style="color: #ef4444; margin-bottom: 12px;">❌ Squad Registration Update</h2>
-              <p style="font-size: 14px; color: #cbd5e1;">Hello <strong>${targetName}</strong>,</p>
-              <p style="font-size: 14px; color: #cbd5e1;">Your squad application for <strong>"${team.name}"</strong> (ID: <code>${team.registrationId}</code>) was reviewed and <strong>REJECTED</strong> by tournament admins.</p>
-              <div style="background-color: #1e293b; padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #ef4444;">
-                <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase;">Reason</p>
-                <p style="margin: 4px 0 0 0; font-size: 14px; font-weight: bold; color: #f87171;">${rejectionReason || 'Roster details or student verification proof did not pass review.'}</p>
-              </div>
-              <p style="font-size: 13px; color: #94a3b8;">You may submit a updated application or reach out to tournament support.</p>
-            </div>`
+            captainName,
+            teamName: team.name,
+            registrationId: team.registrationId,
+            rejectionReason
+          }).catch(err => {
+            console.error(`[EMAIL] Rejection email error for ${targetEmail}:`, err.message);
           });
         }
-      } catch (err) {
-        console.error('Email dispatch error in updateTeamStatus:', err.message);
-      }
+      });
+      emailSent = true;
     }
 
     // Log action
-    await logAction(`Team Status Updated to ${status}`, req.user, `Rejection reason: ${rejectionReason || 'N/A'}`, team._id.toString(), 'Team');
+    await logAction(`Team Status Updated to ${status}`, req.user, `Rejection reason: ${rejectionReason || 'N/A'}`, team._id ? team._id.toString() : 'temp', 'Team');
 
     res.status(200).json({
       success: true,

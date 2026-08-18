@@ -71,6 +71,7 @@ app.use('/api/tournament', require('./routes/tournamentRoutes'));
 app.use('/api/media', require('./routes/mediaRoutes'));
 app.use('/api/announcements', require('./routes/announcementRoutes'));
 app.use('/api/rules', require('./routes/ruleRoutes'));
+app.use('/api/email', require('./routes/emailRoutes'));
 app.use('/api/admin/dashboard', require('./routes/dashboardRoutes'));
 app.use('/api/admin/audit-logs', require('./routes/auditRoutes'));
 

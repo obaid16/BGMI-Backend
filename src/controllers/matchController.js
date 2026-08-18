@@ -1,5 +1,6 @@
 const Match = require('../models/Match');
 const logAction = require('../utils/auditLogger');
+const { sendMatchLobbyEmail } = require('../services/emailService');
 
 /**
  * @desc    Get list of matches (supports status filtering)
@@ -119,6 +120,24 @@ const updateMatch = async (req, res, next) => {
     }
 
     const updatedMatch = await Match.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
+
+    // Optional: Dispatch match lobby credentials if room ID & password provided
+    if (req.body.roomId && req.body.password && updatedMatch.participatingTeams && Array.isArray(updatedMatch.participatingTeams)) {
+      updatedMatch.participatingTeams.forEach((t, idx) => {
+        if (t.captainEmail) {
+          sendMatchLobbyEmail({
+            to: t.captainEmail,
+            captainName: t.captainName || 'Team Captain',
+            teamName: t.name || 'Participating Squad',
+            matchTitle: updatedMatch.title,
+            roomId: req.body.roomId,
+            password: req.body.password,
+            time: updatedMatch.time,
+            slotNumber: idx + 1
+          }).catch(err => console.error('[EMAIL] Lobby credential mail error:', err.message));
+        }
+      });
+    }
 
     await logAction('Match Updated', req.user, `Match schedule modified for ${updatedMatch.title}`, id, 'Match');
 
