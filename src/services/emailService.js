@@ -41,7 +41,7 @@ function getTransporter() {
 }
 
 /**
- * Universal helper to send email with Resend API over HTTPS (Port 443) & Nodemailer SMTP fallback
+ * Universal helper to send email with Brevo/Resend HTTPS API (Port 443) & Nodemailer SMTP fallback
  */
 async function sendMail({ to, subject, html, text }) {
   if (!to || typeof to !== 'string' || !to.includes('@')) {
@@ -51,9 +51,40 @@ async function sendMail({ to, subject, html, text }) {
 
   const cleanRecipient = to.trim();
   const fromName = (process.env.FROM_NAME || 'NIT BGMI Championship').replace(/^["']|["']$/g, '');
-  const fromEmail = process.env.EMAIL_FROM || process.env.FROM_EMAIL || 'onboarding@resend.dev';
+  const fromEmail = process.env.FROM_EMAIL || 'obaidullahshaikh07@gmail.com';
+  const brevoApiKey = process.env.BREVO_API_KEY;
 
-  // 1. TRY RESEND API FIRST OVER HTTPS (Port 443 - Cloud Safe)
+  // 1. TRY BREVO HTTPS REST API FIRST (Port 443 - Cloud Safe, Any Recipient Allowed)
+  if (brevoApiKey && brevoApiKey.startsWith('xkeysib-')) {
+    try {
+      console.log(`[EMAIL] Sending email via Brevo HTTPS API (Port 443): "${subject}" to ${cleanRecipient}...`);
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': brevoApiKey,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: fromName, email: fromEmail },
+          to: [{ email: cleanRecipient }],
+          subject,
+          htmlContent: html
+        })
+      });
+
+      const resData = await response.json();
+      if (response.ok && (resData.messageId || resData.messageIds)) {
+        console.log(`[EMAIL] Brevo HTTPS API Sent Successfully! Message ID: ${resData.messageId || resData.messageIds[0]}`);
+        return { success: true, messageId: resData.messageId || resData.messageIds[0], provider: 'brevo' };
+      }
+      console.warn(`[EMAIL] Brevo API Notice: ${resData.message || JSON.stringify(resData)}. Trying fallbacks...`);
+    } catch (brevoErr) {
+      console.warn(`[EMAIL] Brevo API Error: ${brevoErr.message}. Trying fallbacks...`);
+    }
+  }
+
+  // 2. TRY RESEND API (HTTPS Port 443)
   if (resendClient) {
     try {
       console.log(`[EMAIL] Sending email via Resend API (HTTPS): "${subject}" to ${cleanRecipient}...`);
@@ -70,14 +101,14 @@ async function sendMail({ to, subject, html, text }) {
         return { success: true, messageId: data.id, provider: 'resend' };
       }
       if (error) {
-        console.warn(`[EMAIL] Resend API Notice: ${error.message || JSON.stringify(error)}. Falling back to Nodemailer SMTP...`);
+        console.warn(`[EMAIL] Resend API Notice: ${error.message || JSON.stringify(error)}. Trying Nodemailer SMTP...`);
       }
     } catch (resendErr) {
-      console.warn(`[EMAIL] Resend API error: ${resendErr.message}. Falling back to Nodemailer SMTP...`);
+      console.warn(`[EMAIL] Resend API error: ${resendErr.message}. Trying Nodemailer SMTP...`);
     }
   }
 
-  // 2. FALLBACK TO NODEMAILER GMAIL SMTP
+  // 3. FALLBACK TO NODEMAILER GMAIL SMTP (Localhost / Non-blocked networks)
   try {
     console.log(`[EMAIL] Sending email via Nodemailer SMTP: "${subject}" to ${cleanRecipient}...`);
     const transporter = getTransporter();
