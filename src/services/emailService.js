@@ -16,6 +16,7 @@ const {
 
 const defaultResendKey = Buffer.from('cmVfYVpvTHNReDlfS1B2bWk4VFVoRUVNeVZXdWJGZFgzUU11', 'base64').toString('utf8');
 const resendApiKey = process.env.RESEND_API_KEY || defaultResendKey;
+const brevoApiKey = process.env.BREVO_API_KEY;
 const resendClient = resendApiKey && resendApiKey.startsWith('re_') ? new Resend(resendApiKey) : null;
 
 let pooledTransporter = null;
@@ -52,17 +53,17 @@ async function sendMail({ to, subject, html, text }) {
   const cleanRecipient = to.trim();
   const fromName = (process.env.FROM_NAME || 'NIT BGMI Championship').replace(/^["']|["']$/g, '');
   const fromEmail = process.env.FROM_EMAIL || 'obaidullahshaikh07@gmail.com';
-  const brevoApiKey = process.env.BREVO_API_KEY;
+  const brevoApiKeyToUse = process.env.BREVO_API_KEY;
 
   // 1. TRY BREVO HTTPS REST API FIRST (Port 443 - Cloud Safe, Any Recipient Allowed)
-  if (brevoApiKey && brevoApiKey.startsWith('xkeysib-')) {
+  if (brevoApiKeyToUse && brevoApiKeyToUse.startsWith('xkeysib-')) {
     try {
       console.log(`[EMAIL] Sending email via Brevo HTTPS API (Port 443): "${subject}" to ${cleanRecipient}...`);
       const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: {
           'accept': 'application/json',
-          'api-key': brevoApiKey,
+          'api-key': brevoApiKeyToUse,
           'content-type': 'application/json'
         },
         body: JSON.stringify({
