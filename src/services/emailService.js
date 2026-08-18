@@ -61,7 +61,7 @@ async function sendMail({ to, subject, html, text }) {
     try {
       console.log(`[EMAIL] Sending email via Resend API (HTTPS): "${subject}" to ${cleanRecipient}...`);
       const { data, error } = await resendClient.emails.send({
-        from: `${fromName} <${fromEmail.includes('@') ? fromEmail : 'onboarding@resend.dev'}>`,
+        from: `${fromName} <onboarding@resend.dev>`,
         to: [cleanRecipient],
         subject,
         html,
