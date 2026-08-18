@@ -23,21 +23,15 @@ let pooledTransporter = null;
 function getTransporter() {
   if (pooledTransporter) return pooledTransporter;
 
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const user = process.env.SMTP_USER || 'obaidullahshaikh07@gmail.com';
   const pass = process.env.SMTP_PASS || 'socylrasnkuoqlgr';
-  const port = Number(process.env.SMTP_PORT) || 587;
 
   pooledTransporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: false,
+    service: 'gmail',
     auth: { user, pass },
-    connectionTimeout: 8000,
-    greetingTimeout: 8000,
-    socketTimeout: 8000,
-    family: 4,
-    tls: { rejectUnauthorized: false }
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 15000
   });
 
   return pooledTransporter;
@@ -96,7 +90,7 @@ async function sendMail({ to, subject, html, text }) {
     });
 
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('SMTP send mail operation timed out after 8s')), 8000)
+      setTimeout(() => reject(new Error('SMTP send mail operation timed out after 15s')), 15000)
     );
 
     const info = await Promise.race([mailPromise, timeoutPromise]);
