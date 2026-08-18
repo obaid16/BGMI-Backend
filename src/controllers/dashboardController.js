@@ -75,7 +75,34 @@ const getAuditLogs = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Clear all demo tournament data across collections
+ * @route   DELETE /api/admin/clear-demo-data
+ * @access  Private (Admin only)
+ */
+const clearAllDemoData = async (req, res, next) => {
+  try {
+    const MatchResult = require('../models/MatchResult');
+    const Announcement = require('../models/Announcement');
+
+    await MatchResult.deleteMany({});
+    await Match.deleteMany({});
+    await Team.deleteMany({});
+    await Media.deleteMany({});
+    await Announcement.deleteMany({});
+    await AuditLog.deleteMany({});
+
+    res.status(200).json({
+      success: true,
+      message: 'All tournament demo data deleted successfully!'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboardStats,
-  getAuditLogs
+  getAuditLogs,
+  clearAllDemoData
 };

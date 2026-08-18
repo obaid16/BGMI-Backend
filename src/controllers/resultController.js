@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const MatchResult = require('../models/MatchResult');
 const Match = require('../models/Match');
 const Team = require('../models/Team');
@@ -274,18 +275,84 @@ const deleteResult = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const result = await MatchResult.findByIdAndDelete(id);
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    let result = null;
+
+    if (isObjectId) {
+      result = await MatchResult.findByIdAndDelete(id);
+    }
+    if (!result) {
+      result = await MatchResult.findOneAndDelete({
+        $or: [
+          { matchId: id },
+          { _id: isObjectId ? id : null },
+          { matchNumber: Number(id) || -1 }
+        ]
+      });
+    }
+
     if (!result) {
       return res.status(404).json({ success: false, message: 'Result not found' });
     }
 
-    // Set match back to upcoming/live
-    const match = await Match.findOne({ matchNumber: result.matchNumber });
+    // Set match back to upcoming
+    const match = await Match.findOne({
+      $or: [
+        { _id: isObjectId ? (result.matchId || id) : null },
+        { matchNumber: result.matchNumber }
+      ]
+    });
+
     if (match) {
       match.status = 'Upcoming';
       match.winner = undefined;
       match.topFragger = undefined;
       await match.save();
+    }
+
+    // Recalculate team overall points & standings
+    const allTeams = await Team.find();
+    for (const team of allTeams) {
+      const teamIdStr = team._id.toString();
+      const teamResults = await MatchResult.find({
+        $or: [
+          { 'leaderboard.teamId': teamIdStr },
+          { 'leaderboard.team': team.name }
+        ]
+      });
+
+      let totalPoints = 0;
+      let totalKills = 0;
+      let totalWWCD = 0;
+      let matchesPlayed = 0;
+
+      teamResults.forEach(tr => {
+        const entry = tr.leaderboard.find(e => e.teamId === teamIdStr || e.team === team.name);
+        if (entry) {
+          totalPoints += (entry.total !== undefined ? entry.total : entry.totalPoints || 0);
+          totalKills += (entry.kills !== undefined ? entry.kills : entry.killPts || 0);
+          matchesPlayed += 1;
+          if (entry.rank === 1) {
+            totalWWCD += 1;
+          }
+        }
+      });
+
+      team.points = totalPoints;
+      team.kills = totalKills;
+      team.wwcd = totalWWCD;
+      team.matchesPlayed = matchesPlayed;
+
+      if (team.players && team.players.length > 0) {
+        const playersCount = team.players.length;
+        const avgKillsPerPlayer = Math.floor(totalKills / playersCount);
+        team.players.forEach((p, idx) => {
+          p.kills = avgKillsPerPlayer + (idx === 0 ? totalKills % playersCount : 0);
+          p.kdRatio = matchesPlayed > 0 ? parseFloat((p.kills / matchesPlayed).toFixed(2)) : 0;
+        });
+      }
+
+      await team.save();
     }
 
     await logAction('Result Deleted', req.user, `Result deleted for match #${result.matchNumber}`, id, 'Result');

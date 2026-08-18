@@ -11,45 +11,6 @@ const getMediaList = async (req, res, next) => {
   const { type, status, teamId, matchId } = req.query;
 
   try {
-    // Auto-seed initial proof media if database collection is empty
-    const totalCount = await Media.countDocuments();
-    if (totalCount === 0) {
-      await Media.insertMany([
-        {
-          title: 'Match #1 Erangel - WWCD 18 Kills Proof Screen',
-          type: 'Screenshots',
-          team: 'SQUAD X',
-          player: 'SYCO_PLAYER',
-          match: 'Match #1 - Finals (Erangel)',
-          imageUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&auto=format&fit=crop&q=80',
-          thumbnail: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&auto=format&fit=crop&q=80',
-          verified: false,
-          status: 'Pending Review'
-        },
-        {
-          title: 'Match #2 Miramar - 4v4 Clutch Defeat Proof',
-          type: 'Screenshots',
-          team: 'SOUL REAPERS',
-          player: 'SLAYER_BGMI',
-          match: 'Match #2 - Finals (Miramar)',
-          imageUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
-          thumbnail: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&auto=format&fit=crop&q=80',
-          verified: false,
-          status: 'Pending Review'
-        },
-        {
-          title: 'Match #3 Sanhok - Squad Elimination Scorecard',
-          type: 'Screenshots',
-          team: 'TEAM GODL',
-          player: 'JONATHAN_OP',
-          match: 'Match #3 - Finals (Sanhok)',
-          imageUrl: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=800&auto=format&fit=crop&q=80',
-          thumbnail: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?w=300&auto=format&fit=crop&q=80',
-          verified: true,
-          status: 'Published'
-        }
-      ]);
-    }
 
     const query = {};
     
