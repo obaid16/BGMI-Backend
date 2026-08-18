@@ -23,26 +23,17 @@ function getTransporter() {
   const pass = process.env.SMTP_PASS || 'socylrasnkuoqlgr';
   const port = Number(process.env.SMTP_PORT) || 587;
 
-  if (host.includes('gmail.com')) {
-    pooledTransporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user, pass },
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 8000
-    });
-  } else {
-    pooledTransporter = nodemailer.createTransport({
-      host,
-      port,
-      secure: process.env.SMTP_SECURE === 'true' || port === 465,
-      auth: { user, pass },
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 8000,
-      tls: { rejectUnauthorized: false }
-    });
-  }
+  pooledTransporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: false, // port 587 STARTTLS
+    auth: { user, pass },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+    family: 4, // Force IPv4 to prevent Render cloud IPv6 ENETUNREACH error
+    tls: { rejectUnauthorized: false }
+  });
 
   return pooledTransporter;
 }
