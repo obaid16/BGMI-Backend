@@ -81,9 +81,11 @@ async function sendMail({ to, subject, html, text }) {
         console.log(`[EMAIL] Brevo HTTPS API Sent Successfully! Message ID: ${resData.messageId || resData.messageIds[0]}`);
         return { success: true, messageId: resData.messageId || resData.messageIds[0], provider: 'brevo' };
       }
-      console.warn(`[EMAIL] Brevo API Notice: ${resData.message || JSON.stringify(resData)}. Trying fallbacks...`);
+      console.warn(`[EMAIL] Brevo API Notice: ${resData.message || JSON.stringify(resData)}`);
+      return { success: false, provider: 'brevo', error: resData.message || JSON.stringify(resData) };
     } catch (brevoErr) {
-      console.warn(`[EMAIL] Brevo API Error: ${brevoErr.message}. Trying fallbacks...`);
+      console.warn(`[EMAIL] Brevo API Error: ${brevoErr.message}`);
+      return { success: false, provider: 'brevo', error: brevoErr.message };
     }
   }
 
