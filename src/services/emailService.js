@@ -51,6 +51,8 @@ async function sendMail({ to, subject, html, text }) {
   }
 
   const cleanRecipient = to.trim();
+  const fromName = (process.env.FROM_NAME || 'NIT BGMI Championship').replace(/^["']|["']$/g, '');
+  const fromEmail = process.env.FROM_EMAIL || 'obaidullahshaikh07@gmail.com';
   const defaultBrevoKey = Buffer.from('eGtleXNpYi1mMTdlYmFlYTExOWNhMWQ3MjRkMzc0NzM3ZDA5ODFh' + 'YTIyZWFhZDJmMTc5MDM5MDNjMjMyOTgyMzU2MTNkNjc0LXBuNGs4MTJHOGF4SUllQ0Q=', 'base64').toString('utf8');
   const rawBrevoKey = process.env.BREVO_API_KEY || defaultBrevoKey;
   const brevoApiKeyToUse = String(rawBrevoKey).replace(/^["']|["']$/g, '').trim();
