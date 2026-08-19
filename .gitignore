@@ -1,11 +1,22 @@
 # Dependencies
 node_modules/
 
-# Environment files
+# Environment files & examples
 .env
+.env*
+.env.example
+.env*.example
+.env.example.*
+*.env
 .env.local
 .env.development
+.env.development.local
+.env.test
+.env.test.local
 .env.production
+.env.production.local
+.env.staging
+.env.vault
 
 # Uploaded assets
 uploads/
@@ -14,6 +25,8 @@ uploads/
 *.log
 logs/
 
-# OS metadata
+# OS & Editor metadata
 .DS_Store
 Thumbs.db
+.vscode/
+.idea/
