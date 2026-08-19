@@ -1,14 +1,10 @@
 # Dependencies
 node_modules/
 
-# Environment files & examples
+# Local Environment Secret Files (IGNORED - Never committed to Git)
 .env
-.env*
-.env.example
-.env*.example
-.env.example.*
-*.env
 .env.local
+.env.*.local
 .env.development
 .env.development.local
 .env.test
@@ -17,6 +13,11 @@ node_modules/
 .env.production.local
 .env.staging
 .env.vault
+*.env
+
+# Allow environment template file in Git
+!.env.example
+!.env.*.example
 
 # Uploaded assets
 uploads/
