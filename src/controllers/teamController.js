@@ -68,6 +68,7 @@ const registerTeam = async (req, res, next) => {
       name: p.name,
       ign: p.ign || p.name || `Player_0${idx + 1}`,
       bgmiId: p.bgmiId || `BGMI_${Date.now()}_${idx + 1}`,
+      substituteId: p.substituteId || p.subId || '',
       role: p.role || 'Support',
       verified: true,
       avatar: p.photo || p.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',

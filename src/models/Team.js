@@ -18,6 +18,12 @@ const PlayerSchema = new mongoose.Schema({
     default: '',
     trim: true
   },
+  substituteId: {
+    type: String,
+    required: false,
+    default: '',
+    trim: true
+  },
   role: {
     type: String,
     required: true,
