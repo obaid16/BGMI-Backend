@@ -11,12 +11,14 @@ router.get('/', async (req, res, next) => {
     const matches = await Match.find({}).lean();
     const results = await MatchResult.find({}).lean();
 
-    const registeredSquads = teams.length || 24;
-    const verifiedPlayers = teams.reduce((acc, t) => acc + (t.players ? t.players.length : 0), 0) || 96;
-    const totalMatches = matches.length || 12;
-    const matchesPlayed = results.length || 2;
-    const currentRound = matchesPlayed + 1;
-    const nextMatch = matches.find(m => m.status === 'Live' || m.status === 'Upcoming') || matches[0];
+    const registeredSquads = teams.length;
+    const verifiedPlayers = teams.reduce((acc, t) => acc + (t.players ? t.players.length : 0), 0);
+    const totalMatches = matches.length;
+    const matchesPlayed = results.length;
+    const currentRound = matches.length > 0
+      ? (matches.filter((m) => m && (m.status === 'Completed' || m.status === 'Live')).length || 1)
+      : 0;
+    const nextMatch = matches.find(m => m && (m.status === 'Live' || m.status === 'Upcoming')) || matches[0] || null;
 
     res.status(200).json({
       success: true,
