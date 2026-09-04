@@ -434,7 +434,13 @@ const deleteTeam = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const team = await Team.findByIdAndDelete(id);
+    let team = null;
+    if (typeof id === 'string' && id.match(/^[0-9a-fA-F]{24}$/)) {
+      team = await Team.findByIdAndDelete(id);
+    }
+    if (!team) {
+      team = await Team.findOneAndDelete({ $or: [{ registrationId: id }, { id: id }, { name: id }] });
+    }
 
     if (!team) {
       return res.status(404).json({ success: false, message: 'Team not found' });
@@ -448,6 +454,44 @@ const deleteTeam = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Bulk delete teams
+ * @route   POST /api/teams/bulk-delete
+ * @access  Private (Admin only)
+ */
+const bulkDeleteTeams = async (req, res, next) => {
+  const { ids } = req.body;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ success: false, message: 'No team IDs provided' });
+  }
+
+  try {
+    const isObjectId = (val) => typeof val === 'string' && val.match(/^[0-9a-fA-F]{24}$/);
+    const objectIds = ids.filter(isObjectId);
+    const otherIds = ids.filter((id) => !isObjectId(id));
+
+    const queries = [];
+    if (objectIds.length > 0) queries.push({ _id: { $in: objectIds } });
+    if (otherIds.length > 0) {
+      queries.push({ registrationId: { $in: otherIds } });
+      queries.push({ id: { $in: otherIds } });
+    }
+
+    if (queries.length === 0) {
+      return res.status(200).json({ success: true, count: 0 });
+    }
+
+    const result = await Team.deleteMany({ $or: queries });
+
+    await logAction('Bulk Teams Deleted', req.user, `Bulk deleted ${result.deletedCount} teams`, 'bulk', 'Team');
+
+    res.status(200).json({ success: true, count: result.deletedCount, message: `Successfully deleted ${result.deletedCount} teams` });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   registerTeam,
   getTeams,
@@ -455,5 +499,6 @@ module.exports = {
   updateTeamStatus,
   createTeam,
   updateTeam,
-  deleteTeam
+  deleteTeam,
+  bulkDeleteTeams
 };

@@ -7,7 +7,8 @@ const {
   updateTeamStatus, 
   createTeam, 
   updateTeam, 
-  deleteTeam 
+  deleteTeam,
+  bulkDeleteTeams
 } = require('../controllers/teamController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -17,6 +18,7 @@ router.get('/', getTeams);
 router.get('/:id', getTeamById);
 
 // Admin-only endpoints
+router.post('/bulk-delete', protect, adminOnly, bulkDeleteTeams);
 router.post('/', protect, adminOnly, createTeam);
 router.put('/:id', protect, adminOnly, updateTeam);
 router.delete('/:id', protect, adminOnly, deleteTeam);
