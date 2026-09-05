@@ -5,7 +5,8 @@ const {
   createMedia, 
   verifyMedia, 
   publishMedia, 
-  deleteMedia 
+  deleteMedia,
+  bulkDeleteMedia 
 } = require('../controllers/mediaController');
 const { upload } = require('../middleware/uploadMiddleware');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
@@ -15,6 +16,8 @@ router.get('/', getMediaList);
 router.post('/', upload.single('file'), createMedia); // Supports file uploading under key 'file'
 
 // Admin-only routes
+router.post('/bulk-delete', protect, adminOnly, bulkDeleteMedia);
+router.delete('/bulk', protect, adminOnly, bulkDeleteMedia);
 router.put('/:id/verify', protect, adminOnly, verifyMedia);
 router.put('/:id/publish', protect, adminOnly, publishMedia);
 router.delete('/:id', protect, adminOnly, deleteMedia);

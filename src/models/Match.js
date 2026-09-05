@@ -82,6 +82,9 @@ const MatchSchema = new mongoose.Schema({
   timestamps: true
 });
 
+MatchSchema.index({ status: 1 });
+MatchSchema.index({ matchNumber: 1 });
+
 MatchSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });

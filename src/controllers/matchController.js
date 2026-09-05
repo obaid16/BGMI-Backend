@@ -22,8 +22,9 @@ const getMatches = async (req, res, next) => {
     }
 
     // Sort: matchNumber ascending (1, 2, 3, 4)
-    const matches = await Match.find(query).sort({ matchNumber: 1 });
-    res.status(200).json({ success: true, data: matches });
+    const matches = await Match.find(query).sort({ matchNumber: 1 }).lean();
+    const formatted = matches.map(m => ({ ...m, id: m._id.toString() }));
+    res.status(200).json({ success: true, data: formatted });
   } catch (error) {
     next(error);
   }
@@ -253,11 +254,39 @@ const deleteMatch = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Bulk delete matches
+ * @route   POST /api/matches/bulk-delete
+ * @access  Private (Admin only)
+ */
+const bulkDeleteMatches = async (req, res, next) => {
+  const { ids } = req.body;
+
+  try {
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: 'Please provide an array of match IDs to delete' });
+    }
+
+    const result = await Match.deleteMany({ _id: { $in: ids } });
+
+    await logAction('Bulk Matches Deleted', req.user, `Bulk deleted ${result.deletedCount} matches`, '', 'Match');
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully deleted ${result.deletedCount} match(es)`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getMatches,
   getMatchById,
   createMatch,
   updateMatch,
   updateMatchStatus,
-  deleteMatch
+  deleteMatch,
+  bulkDeleteMatches
 };

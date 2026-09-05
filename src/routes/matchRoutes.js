@@ -6,7 +6,8 @@ const {
   createMatch, 
   updateMatch, 
   updateMatchStatus, 
-  deleteMatch 
+  deleteMatch,
+  bulkDeleteMatches 
 } = require('../controllers/matchController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -16,6 +17,8 @@ router.get('/:id', getMatchById);
 
 // Admin-only routes
 router.post('/', protect, adminOnly, createMatch);
+router.post('/bulk-delete', protect, adminOnly, bulkDeleteMatches);
+router.delete('/bulk', protect, adminOnly, bulkDeleteMatches);
 router.put('/:id', protect, adminOnly, updateMatch);
 router.put('/:id/status', protect, adminOnly, updateMatchStatus);
 router.delete('/:id', protect, adminOnly, deleteMatch);

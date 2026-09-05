@@ -60,6 +60,9 @@ const MediaSchema = new mongoose.Schema({
   timestamps: true
 });
 
+MediaSchema.index({ status: 1, type: 1 });
+MediaSchema.index({ createdAt: -1 });
+
 MediaSchema.virtual('id').get(function () {
   return this._id.toHexString();
 });

@@ -6,13 +6,13 @@ const MatchResult = require('../models/MatchResult');
  * @returns {Promise<Array>} - List of ranked team standings
  */
 async function calculateStandings() {
-  // Fetch all approved teams
-  const teams = await Team.find({ status: 'Approved' }).lean();
-  
-  // Fetch all published match results
-  const results = await MatchResult.find({ 
-    $or: [{ published: true }, { publish: true }] 
-  }).lean();
+  // Fetch all approved teams and published match results concurrently
+  const [teams, results] = await Promise.all([
+    Team.find({ status: 'Approved' }).lean(),
+    MatchResult.find({ 
+      $or: [{ published: true }, { publish: true }] 
+    }).lean()
+  ]);
 
   // Initialize standings map for fast lookup
   const standingsMap = {};

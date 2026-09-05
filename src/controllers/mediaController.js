@@ -28,8 +28,9 @@ const getMediaList = async (req, res, next) => {
     if (teamId) query.teamId = teamId;
     if (matchId) query.matchId = matchId;
 
-    const media = await Media.find(query).sort({ createdAt: -1 });
-    res.status(200).json({ success: true, data: media });
+    const media = await Media.find(query).sort({ createdAt: -1 }).lean();
+    const formatted = media.map(m => ({ ...m, id: m._id.toString() }));
+    res.status(200).json({ success: true, data: formatted });
   } catch (error) {
     next(error);
   }
@@ -168,10 +169,38 @@ const deleteMedia = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Bulk delete media items
+ * @route   POST /api/media/bulk-delete
+ * @access  Private (Admin only)
+ */
+const bulkDeleteMedia = async (req, res, next) => {
+  const { ids } = req.body;
+
+  try {
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ success: false, message: 'Please provide an array of media IDs to delete' });
+    }
+
+    const result = await Media.deleteMany({ _id: { $in: ids } });
+
+    await logAction('Bulk Media Deleted', req.user, `Bulk deleted ${result.deletedCount} media items`, '', 'Media');
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully deleted ${result.deletedCount} media item(s)`,
+      deletedCount: result.deletedCount
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getMediaList,
   createMedia,
   verifyMedia,
   publishMedia,
-  deleteMedia
+  deleteMedia,
+  bulkDeleteMedia
 };

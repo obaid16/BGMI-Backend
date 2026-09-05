@@ -193,17 +193,25 @@ const getTeams = async (req, res, next) => {
     const limitNum = parseInt(limit, 10);
     const skipNum = (pageNum - 1) * limitNum;
 
-    const total = await Team.countDocuments(query);
+    const [total, teams] = await Promise.all([
+      Team.countDocuments(query),
+      Team.find(query)
+        .sort({ rank: 1, name: 1 })
+        .skip(skipNum)
+        .limit(limitNum)
+        .lean()
+    ]);
     const totalPages = Math.ceil(total / limitNum);
 
-    const teams = await Team.find(query)
-      .sort({ rank: 1, name: 1 })
-      .skip(skipNum)
-      .limit(limitNum);
+    const formattedTeams = teams.map(t => ({
+      ...t,
+      id: t._id.toString(),
+      players: (t.players || []).map(p => ({ ...p, id: p._id.toString() }))
+    }));
 
     res.status(200).json({
       success: true,
-      data: teams,
+      data: formattedTeams,
       pagination: {
         page: pageNum,
         limit: limitNum,

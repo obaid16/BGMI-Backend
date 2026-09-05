@@ -8,17 +8,16 @@ const logAction = require('../utils/auditLogger');
  */
 const getPlayers = async (req, res, next) => {
   try {
-    const teams = await Team.find({});
+    const teams = await Team.find({}).lean();
     const playersList = [];
 
     teams.forEach(team => {
       if (team.players && Array.isArray(team.players)) {
         team.players.forEach(player => {
-          // Serialize to JSON to include virtual id
-          const playerJSON = player.toJSON();
           playersList.push({
-            ...playerJSON,
-            teamId: team._id.toString(),
+            ...player,
+            id: player._id ? player._id.toString() : '',
+            teamId: team._id ? team._id.toString() : '',
             teamName: team.name,
             college: team.college,
             teamVerified: team.verified

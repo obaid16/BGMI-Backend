@@ -7,7 +7,12 @@ const connectDB = async () => {
   if (primaryUri) {
     try {
       const conn = await mongoose.connect(primaryUri, {
-        serverSelectionTimeoutMS: 5000
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        maxPoolSize: 50,
+        minPoolSize: 10,
+        family: 4 // Force IPv4 to avoid IPv6 DNS delays on Windows
       });
       console.log(`MongoDB Connected (Atlas): ${conn.connection.host}`);
       return;

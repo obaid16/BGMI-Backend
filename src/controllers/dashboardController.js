@@ -10,38 +10,45 @@ const AuditLog = require('../models/AuditLog');
  */
 const getDashboardStats = async (req, res, next) => {
   try {
-    const totalTeams = await Team.countDocuments({});
-    const approvedTeams = await Team.countDocuments({ status: 'Approved' });
-    const pendingRegistrations = await Team.countDocuments({ status: 'Pending' });
-
-    // Aggregate total players across all teams
-    const playerStats = await Team.aggregate([
-      {
-        $project: {
-          numPlayers: {
-            $cond: {
-              if: { $isArray: '$players' },
-              then: { $size: '$players' },
-              else: 0
+    const [
+      totalTeams,
+      approvedTeams,
+      pendingRegistrations,
+      playerStats,
+      upcomingMatches,
+      liveMatches,
+      completedMatches,
+      pendingProofs
+    ] = await Promise.all([
+      Team.countDocuments({}),
+      Team.countDocuments({ status: 'Approved' }),
+      Team.countDocuments({ status: 'Pending' }),
+      Team.aggregate([
+        {
+          $project: {
+            numPlayers: {
+              $cond: {
+                if: { $isArray: '$players' },
+                then: { $size: '$players' },
+                else: 0
+              }
             }
           }
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$numPlayers' }
+          }
         }
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$numPlayers' }
-        }
-      }
+      ]),
+      Match.countDocuments({ status: 'Upcoming' }),
+      Match.countDocuments({ status: 'Live' }),
+      Match.countDocuments({ status: 'Completed' }),
+      Media.countDocuments({ status: 'Pending Review' })
     ]);
-    const totalPlayers = playerStats.length > 0 ? playerStats[0].total : 0;
 
-    const upcomingMatches = await Match.countDocuments({ status: 'Upcoming' });
-    const liveMatches = await Match.countDocuments({ status: 'Live' });
-    const completedMatches = await Match.countDocuments({ status: 'Completed' });
-
-    // Pending proofs = Media POV or Screenshots in 'Pending Review'
-    const pendingProofs = await Media.countDocuments({ status: 'Pending Review' });
+    const totalPlayers = playerStats && playerStats.length > 0 ? playerStats[0].total : 0;
 
     res.status(200).json({
       success: true,

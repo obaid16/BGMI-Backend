@@ -152,6 +152,9 @@ const TeamSchema = new mongoose.Schema({
   timestamps: true
 });
 
+TeamSchema.index({ status: 1 });
+TeamSchema.index({ rank: 1 });
+
 // virtual to make _id look like id to match frontend
 TeamSchema.virtual('id').get(function () {
   return this._id.toHexString();
