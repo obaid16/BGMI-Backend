@@ -142,6 +142,11 @@ const TeamSchema = new mongoose.Schema({
     enum: ['Pending', 'Under Review', 'Approved', 'Rejected'],
     default: 'Pending'
   },
+  rejectionReason: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   players: [PlayerSchema]
 }, {
   timestamps: true

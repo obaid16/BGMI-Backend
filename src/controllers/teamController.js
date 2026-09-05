@@ -44,7 +44,7 @@ const registerTeam = async (req, res, next) => {
       console.warn('[DB NOTICE] Duplicate team check bypassed due to DB state:', dbErr.message);
     }
     if (existingTeamName) {
-      return res.status(400).json({ success: false, message: `Team name "${teamName}" is already registered` });
+      return res.status(400).json({ success: false, message: `Team name "${cleanTeamName}" is already registered` });
     }
 
     // Check for duplicate BGMI IDs across players (only if BGMI IDs provided)
@@ -94,8 +94,8 @@ const registerTeam = async (req, res, next) => {
           phone: cleanCaptainPhone
         },
         registrationId,
-        status: 'Approved',
-        verified: true,
+        status: req.body.status || 'Pending',
+        verified: req.body.status === 'Approved',
         players: formattedPlayers
       });
 
@@ -109,8 +109,8 @@ const registerTeam = async (req, res, next) => {
         college: cleanCollegeName,
         captain: { name: cleanCaptainName, email: cleanCaptainEmail, phone: cleanCaptainPhone },
         registrationId,
-        status: 'Approved',
-        verified: true,
+        status: req.body.status || 'Pending',
+        verified: req.body.status === 'Approved',
         players: formattedPlayers
       };
     }
@@ -121,7 +121,7 @@ const registerTeam = async (req, res, next) => {
       message: 'Team registered successfully',
       data: {
         registrationId,
-        status: 'Approved',
+        status: team.status,
         team
       }
     });
@@ -363,6 +363,7 @@ const updateTeamStatus = async (req, res, next) => {
       success: true,
       message: `Team status updated to ${status}`,
       emailSent,
+      data: team,
       team
     });
   } catch (error) {
@@ -434,13 +435,19 @@ const deleteTeam = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    let team = null;
-    if (typeof id === 'string' && id.match(/^[0-9a-fA-F]{24}$/)) {
-      team = await Team.findByIdAndDelete(id);
+    const isObjectId = typeof id === 'string' && id.match(/^[0-9a-fA-F]{24}$/);
+    const query = {
+      $or: [
+        { registrationId: id },
+        { shortName: id },
+        { name: id }
+      ]
+    };
+    if (isObjectId) {
+      query.$or.push({ _id: id });
     }
-    if (!team) {
-      team = await Team.findOneAndDelete({ $or: [{ registrationId: id }, { id: id }, { name: id }] });
-    }
+
+    const team = await Team.findOneAndDelete(query);
 
     if (!team) {
       return res.status(404).json({ success: false, message: 'Team not found' });
@@ -471,18 +478,19 @@ const bulkDeleteTeams = async (req, res, next) => {
     const objectIds = ids.filter(isObjectId);
     const otherIds = ids.filter((id) => !isObjectId(id));
 
-    const queries = [];
-    if (objectIds.length > 0) queries.push({ _id: { $in: objectIds } });
+    const orClauses = [];
+    if (objectIds.length > 0) orClauses.push({ _id: { $in: objectIds } });
     if (otherIds.length > 0) {
-      queries.push({ registrationId: { $in: otherIds } });
-      queries.push({ id: { $in: otherIds } });
+      orClauses.push({ registrationId: { $in: otherIds } });
+      orClauses.push({ shortName: { $in: otherIds } });
+      orClauses.push({ name: { $in: otherIds } });
     }
 
-    if (queries.length === 0) {
+    if (orClauses.length === 0) {
       return res.status(200).json({ success: true, count: 0 });
     }
 
-    const result = await Team.deleteMany({ $or: queries });
+    const result = await Team.deleteMany({ $or: orClauses });
 
     await logAction('Bulk Teams Deleted', req.user, `Bulk deleted ${result.deletedCount} teams`, 'bulk', 'Team');
 

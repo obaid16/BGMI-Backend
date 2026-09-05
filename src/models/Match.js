@@ -42,6 +42,16 @@ const MatchSchema = new mongoose.Schema({
     type: Number,
     default: 16
   },
+  roomId: {
+    type: String,
+    trim: true,
+    default: ''
+  },
+  password: {
+    type: String,
+    trim: true,
+    default: ''
+  },
   participatingTeams: [{
     id: {
       type: String,

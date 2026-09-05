@@ -1,4 +1,5 @@
 const Match = require('../models/Match');
+const Team = require('../models/Team');
 const logAction = require('../utils/auditLogger');
 const { sendMatchLobbyEmail } = require('../services/emailService');
 
@@ -62,7 +63,7 @@ const getMatchById = async (req, res, next) => {
  * @access  Private (Admin only)
  */
 const createMatch = async (req, res, next) => {
-  const { round, map, date, time, status, streamUrl, participatingTeams } = req.body;
+  const { round, map, date, time, status, streamUrl, participatingTeams, roomId, password } = req.body;
 
   try {
     if (!round || !map || !date || !time) {
@@ -73,6 +74,35 @@ const createMatch = async (req, res, next) => {
     const matchNumber = matchesCount + 1;
     const title = `Match #${matchNumber} - ${round} ${map}`;
 
+    // Normalize participatingTeams whether passed as string IDs or objects
+    const formattedParticipatingTeams = [];
+    if (Array.isArray(participatingTeams) && participatingTeams.length > 0) {
+      for (const t of participatingTeams) {
+        if (typeof t === 'string') {
+          const teamDoc = await Team.findById(t).catch(() => null);
+          if (teamDoc) {
+            formattedParticipatingTeams.push({
+              id: teamDoc._id.toString(),
+              name: teamDoc.name,
+              shortName: teamDoc.shortName || teamDoc.name.slice(0, 4).toUpperCase()
+            });
+          } else {
+            formattedParticipatingTeams.push({
+              id: t,
+              name: `Team ${t.slice(-4)}`,
+              shortName: 'TEAM'
+            });
+          }
+        } else if (t && typeof t === 'object') {
+          formattedParticipatingTeams.push({
+            id: (t.id || t._id || '').toString(),
+            name: t.name || 'Team',
+            shortName: t.shortName || (t.name || 'TEAM').slice(0, 4).toUpperCase()
+          });
+        }
+      }
+    }
+
     const match = await Match.create({
       matchNumber,
       title,
@@ -81,9 +111,11 @@ const createMatch = async (req, res, next) => {
       date,
       time,
       status: status || 'Upcoming',
+      roomId: roomId || '',
+      password: password || '',
       streamUrl: streamUrl || 'https://youtube.com/live/example',
-      teamsCount: participatingTeams ? participatingTeams.length : 16,
-      participatingTeams: participatingTeams || []
+      teamsCount: formattedParticipatingTeams.length > 0 ? formattedParticipatingTeams.length : 16,
+      participatingTeams: formattedParticipatingTeams
     });
 
     await logAction('Match Created', req.user, `Match #${matchNumber} scheduled for ${date} at ${time}`, match._id.toString(), 'Match');
@@ -115,8 +147,34 @@ const updateMatch = async (req, res, next) => {
       req.body.title = `Match #${match.matchNumber} - ${round} ${map}`;
     }
 
-    if (req.body.participatingTeams) {
-      req.body.teamsCount = req.body.participatingTeams.length;
+    if (req.body.participatingTeams && Array.isArray(req.body.participatingTeams)) {
+      const formatted = [];
+      for (const t of req.body.participatingTeams) {
+        if (typeof t === 'string') {
+          const teamDoc = await Team.findById(t).catch(() => null);
+          if (teamDoc) {
+            formatted.push({
+              id: teamDoc._id.toString(),
+              name: teamDoc.name,
+              shortName: teamDoc.shortName || teamDoc.name.slice(0, 4).toUpperCase()
+            });
+          } else {
+            formatted.push({
+              id: t,
+              name: `Team ${t.slice(-4)}`,
+              shortName: 'TEAM'
+            });
+          }
+        } else if (t && typeof t === 'object') {
+          formatted.push({
+            id: (t.id || t._id || '').toString(),
+            name: t.name || 'Team',
+            shortName: t.shortName || (t.name || 'TEAM').slice(0, 4).toUpperCase()
+          });
+        }
+      }
+      req.body.participatingTeams = formatted;
+      req.body.teamsCount = formatted.length;
     }
 
     const updatedMatch = await Match.findByIdAndUpdate(id, req.body, { new: true, runValidators: true });
