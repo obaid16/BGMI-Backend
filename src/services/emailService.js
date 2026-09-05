@@ -3,7 +3,12 @@
  * Supports Resend API over HTTPS (Port 443 - Cloud Compatible) with automatic Nodemailer Gmail SMTP fallback!
  */
 const nodemailer = require('nodemailer');
-const { Resend } = require('resend');
+let Resend = null;
+try {
+  Resend = require('resend').Resend;
+} catch (err) {
+  console.warn('[EMAIL] "resend" module not loaded. Falling back to Brevo & Nodemailer SMTP.');
+}
 const {
   registrationConfirmationTemplate,
   registrationApprovalTemplate,
@@ -17,7 +22,7 @@ const {
 const defaultResendKey = Buffer.from('cmVfYVpvTHNReDlfS1B2bWk4VFVoRUVNeVZXdWJGZFgzUU11', 'base64').toString('utf8');
 const resendApiKey = process.env.RESEND_API_KEY || defaultResendKey;
 const brevoApiKey = process.env.BREVO_API_KEY;
-const resendClient = resendApiKey && resendApiKey.startsWith('re_') ? new Resend(resendApiKey) : null;
+const resendClient = (Resend && resendApiKey && resendApiKey.startsWith('re_')) ? new Resend(resendApiKey) : null;
 
 let pooledTransporter = null;
 
