@@ -70,8 +70,8 @@ async function runFullQA() {
     const loginRes = await request(`${API_BASE}/auth/login`, {
       method: 'POST',
       body: {
-        email: 'obaidullahshaikh07@gmail.com',
-        password: 'obaid2310'
+        email: 'admin1@bgmi.esports',
+        password: 'Admin1#BGMI2026'
       }
     });
 

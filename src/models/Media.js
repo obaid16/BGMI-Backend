@@ -22,8 +22,9 @@ const MediaSchema = new mongoose.Schema({
   },
   player: {
     type: String,
-    required: true,
-    trim: true
+    required: false,
+    trim: true,
+    default: ''
   },
   match: {
     type: String,

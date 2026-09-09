@@ -2,11 +2,20 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const logAction = require('../utils/auditLogger');
 
-// Generate JWT Token
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'supersecretbgmiesportssecretkey123!', {
-    expiresIn: '30d'
-  });
+// Generate JWT Token (30-day session)
+const generateToken = (user) => {
+  return jwt.sign(
+    { 
+      id: user._id ? user._id.toString() : user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name
+    },
+    process.env.JWT_SECRET || 'supersecretbgmiesportssecretkey123!',
+    {
+      expiresIn: '30d'
+    }
+  );
 };
 
 /**
@@ -34,7 +43,7 @@ const loginAdmin = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user);
 
     // Log action
     await logAction('Admin Login Successful', user, `User logged in from IP ${req.ip}`, user._id.toString(), 'Auth');
@@ -65,6 +74,7 @@ const getMe = async (req, res, next) => {
     // req.user is loaded by protect middleware
     res.status(200).json({
       success: true,
+      valid: true,
       user: {
         id: req.user._id.toString(),
         name: req.user.name,

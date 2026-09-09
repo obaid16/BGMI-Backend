@@ -63,13 +63,16 @@ const createMedia = async (req, res, next) => {
   const { title, type, team, player, match, videoUrl } = req.body;
 
   try {
-    if (!type || !team || !player || !match) {
-      return res.status(400).json({ success: false, message: 'Please provide type, team, player, and match context' });
+    if (!type || !team || !match) {
+      return res.status(400).json({ success: false, message: 'Please provide media type, squad, and match context' });
     }
+
+    const cleanPlayer = (player && String(player).trim()) ? String(player).trim() : '';
+    const playerSnippet = cleanPlayer ? ` - ${cleanPlayer}` : '';
 
     const finalTitle = (title && String(title).trim()) 
       ? String(title).trim() 
-      : `${team} - ${player} (${type === 'POV' ? 'POV' : 'Screenshot'}) - ${match}`;
+      : `${team}${playerSnippet} (${type === 'POV' ? 'POV' : 'Screenshot'}) - ${match}`;
 
     // Resolve uploaded file from req.file or req.files
     const uploadedFile = req.file || (req.files && (req.files.find(f => f.fieldname === 'file' || f.fieldname === 'mediaFile') || req.files[0]));
@@ -113,7 +116,7 @@ const createMedia = async (req, res, next) => {
         title: finalTitle,
         type,
         team,
-        player,
+        player: cleanPlayer,
         match,
         thumbnail: thumbnailUrl,
         videoUrl: resolvedVideoUrl || undefined,
@@ -132,7 +135,7 @@ const createMedia = async (req, res, next) => {
         title: finalTitle,
         type,
         team,
-        player,
+        player: cleanPlayer,
         match,
         thumbnail: thumbnailUrl,
         videoUrl: resolvedVideoUrl || undefined,

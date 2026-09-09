@@ -34,15 +34,23 @@ const seedDatabase = async () => {
     await AuditLog.deleteMany({});
     console.log('Collections cleared.');
 
-    // 1. SEED DEFAULT SUPER ADMIN
-    console.log('Seeding default administrator...');
-    const adminUser = await User.create({
-      name: 'Tournament Director',
-      email: 'obaidullahshaikh07@gmail.com',
-      password: 'obaid2310', // Will be hashed by pre-save middleware
-      role: 'SUPER_ADMIN'
-    });
-    console.log('Admin user seeded (obaidullahshaikh07@gmail.com / obaid2310).');
+    // 1. SEED DEFAULT ADMINISTRATORS (SUPER_ADMIN & ADMIN)
+    console.log('Seeding default administrators...');
+    await User.create([
+      {
+        name: 'Tournament Director',
+        email: 'admin1@bgmi.esports',
+        password: 'Admin1#BGMI2026',
+        role: 'SUPER_ADMIN'
+      },
+      {
+        name: 'Operations Referee',
+        email: 'admin2@bgmi.esports',
+        password: 'Admin2#BGMI2026',
+        role: 'ADMIN'
+      }
+    ]);
+    console.log('Admin users seeded (admin1@bgmi.esports / admin2@bgmi.esports).');
 
     // 2. SEED HANDBOOK RULES (In-house Championship Rules)
     console.log('Seeding rules handbook...');
