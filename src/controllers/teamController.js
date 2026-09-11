@@ -364,25 +364,51 @@ const createTeam = async (req, res, next) => {
   try {
     const { name, shortName, college, logo, banner, captain, players, status } = req.body;
 
+    if (!name || !name.trim()) {
+      return res.status(400).json({ success: false, message: 'Team/Squad name is required' });
+    }
+
+    const cleanName = name.trim();
+    const sName = (shortName || cleanName.substring(0, 5)).toUpperCase().trim();
+    const cleanCollege = (college || 'NIT').trim();
+
+    // Ensure required captain subdocument fields exist
+    const defaultCaptain = {
+      name: captain?.name || `${cleanName} Captain`,
+      email: captain?.email || `captain.${cleanName.toLowerCase().replace(/[^a-z0-9]/g, '')}@nitbgmi.ac.in`,
+      phone: captain?.phone || '+91 98765 43210',
+    };
+
+    // Ensure 4 starting players are created
+    const defaultPlayers = Array.isArray(players) && players.length > 0 ? players : [
+      { name: `${cleanName} Player 1`, ign: `${sName}_IGL`, role: 'IGL', verified: true, verificationStatus: 'Verified' },
+      { name: `${cleanName} Player 2`, ign: `${sName}_Fragger`, role: 'Assaulter', verified: true, verificationStatus: 'Verified' },
+      { name: `${cleanName} Player 3`, ign: `${sName}_Support`, role: 'Support', verified: true, verificationStatus: 'Verified' },
+      { name: `${cleanName} Player 4`, ign: `${sName}_Sniper`, role: 'Sniper', verified: true, verificationStatus: 'Verified' },
+    ];
+
     const registrationId = await generateRegistrationId();
 
     const team = await Team.create({
-      name,
-      shortName: shortName || name.substring(0, 5).toUpperCase(),
-      college,
-      logo,
-      banner,
-      captain,
-      players: players || [],
+      name: cleanName,
+      shortName: sName,
+      college: cleanCollege,
+      logo: logo || 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&auto=format&fit=crop&q=80',
+      banner: banner || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&auto=format&fit=crop&q=80',
+      captain: defaultCaptain,
+      players: defaultPlayers,
       registrationId,
       status: status || 'Approved',
-      verified: status === 'Approved'
+      verified: status !== 'Pending' && status !== 'Rejected',
     });
 
     await logAction('Team Created Manually', req.user, `Team ${team.name} created`, team._id.toString(), 'Team');
 
-    res.status(201).json({ success: true, team });
+    res.status(201).json({ success: true, team, data: team });
   } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ success: false, message: 'A team with this squad name already exists' });
+    }
     next(error);
   }
 };
