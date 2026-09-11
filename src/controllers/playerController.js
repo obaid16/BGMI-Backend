@@ -203,6 +203,49 @@ const deletePlayer = async (req, res, next) => {
 };
 
 /**
+ * @desc    Bulk delete players from rosters
+ * @route   POST /api/players/bulk-delete
+ * @access  Private (Admin only)
+ */
+const bulkDeletePlayers = async (req, res, next) => {
+  const { ids } = req.body;
+
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ success: false, message: 'No player IDs provided' });
+  }
+
+  try {
+    const objectIdPattern = /^[0-9a-fA-F]{24}$/;
+    const validIds = ids.filter(id => typeof id === 'string' && objectIdPattern.test(id));
+
+    if (validIds.length === 0) {
+      return res.status(200).json({ success: true, count: 0, message: 'No matching database player records to delete' });
+    }
+
+    const result = await Team.updateMany(
+      { 'players._id': { $in: validIds } },
+      { $pull: { players: { _id: { $in: validIds } } } }
+    );
+
+    await logAction(
+      'Bulk Players Deleted',
+      req.user,
+      `Bulk deleted ${validIds.length} players from rosters`,
+      'bulk',
+      'Player'
+    );
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully removed ${validIds.length} players from rosters`,
+      count: validIds.length
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * @desc    Get overall tournament MVP & fragger rankings
  * @route   GET /api/mvp
  * @access  Public
@@ -266,5 +309,6 @@ module.exports = {
   getMVP,
   verifyPlayer,
   updatePlayer,
-  deletePlayer
+  deletePlayer,
+  bulkDeletePlayers
 };

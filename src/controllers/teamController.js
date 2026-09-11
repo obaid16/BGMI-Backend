@@ -116,7 +116,7 @@ const registerTeam = async (req, res, next) => {
     }
 
     // Respond immediately to the client so UI seamlessly moves to Step 4 without lag
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Team registered successfully',
       data: {
@@ -124,34 +124,6 @@ const registerTeam = async (req, res, next) => {
         status: team.status,
         team
       }
-    });
-
-    // Collect recipient emails (captain email + player emails)
-    const recipientEmails = new Set();
-    if (cleanCaptainEmail && cleanCaptainEmail.includes('@')) {
-      recipientEmails.add(cleanCaptainEmail);
-    }
-    if (players && Array.isArray(players)) {
-      players.forEach(p => {
-        if (p.email && typeof p.email === 'string' && p.email.includes('@')) {
-          recipientEmails.add(p.email.trim());
-        }
-      });
-    }
-
-    // Dispatch confirmation email to all collected emails asynchronously
-    recipientEmails.forEach(targetEmail => {
-      sendRegistrationConfirmation({
-        to: targetEmail,
-        captainName: cleanCaptainName,
-        teamName: cleanTeamName,
-        registrationId,
-        collegeName: cleanCollegeName,
-        captainPhone: cleanCaptainPhone,
-        playersCount: players ? players.length : 4
-      }).catch(err => {
-        console.error(`[EMAIL] Registration confirmation error for ${targetEmail}:`, err.message);
-      });
     });
 
   } catch (error) {
@@ -193,10 +165,14 @@ const getTeams = async (req, res, next) => {
     const limitNum = parseInt(limit, 10);
     const skipNum = (pageNum - 1) * limitNum;
 
+    const sortOrder = (status === 'Approved' || status === 'Verified')
+      ? { rank: 1, name: 1 }
+      : { createdAt: -1, _id: -1 };
+
     const [total, teams] = await Promise.all([
       Team.countDocuments(query),
       Team.find(query)
-        .sort({ rank: 1, name: 1 })
+        .sort(sortOrder)
         .skip(skipNum)
         .limit(limitNum)
         .lean()

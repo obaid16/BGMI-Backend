@@ -99,9 +99,37 @@ const deleteRule = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Download official rulebook PDF
+ * @route   GET /api/rules/download
+ * @access  Public
+ */
+const downloadRulesPdf = async (req, res, next) => {
+  const path = require('path');
+  const fs = require('fs');
+
+  const possiblePaths = [
+    path.join(__dirname, '../../NIT_BGMI_Official_Rules.pdf'),
+    path.join(__dirname, '../../../NIT_BGMI_Official_Rules.pdf'),
+    path.join(__dirname, '../../uploads/NIT_BGMI_Official_Rules.pdf')
+  ];
+
+  const targetPath = possiblePaths.find(p => fs.existsSync(p));
+
+  if (!targetPath) {
+    return res.status(404).json({ success: false, message: 'Rules PDF file not found' });
+  }
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'attachment; filename="NIT_BGMI_Official_Rules.pdf"');
+  return res.download(targetPath, 'NIT_BGMI_Official_Rules.pdf');
+};
+
 module.exports = {
   getRules,
   createRule,
   updateRule,
-  deleteRule
+  deleteRule,
+  downloadRulesPdf
 };
+
