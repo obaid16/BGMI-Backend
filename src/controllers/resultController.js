@@ -140,7 +140,7 @@ const submitResult = async (req, res, next) => {
         team: mvp.team || winnerEntry?.teamName || 'Unknown Team',
         kills: parseInt(mvp.kills, 10) || 0,
         damage: (parseInt(mvp.kills, 10) || 0) * 150,
-        avatar: mvp.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
+        avatar: mvp.avatar || ''
       };
     } else if (winnerEntry && winnerEntry.teamId) {
       const winTeam = await Team.findById(winnerEntry.teamId);

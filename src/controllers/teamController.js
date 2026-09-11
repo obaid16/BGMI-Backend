@@ -71,7 +71,7 @@ const registerTeam = async (req, res, next) => {
       substituteId: p.substituteId || p.subId || '',
       role: p.role || 'Support',
       verified: true,
-      avatar: p.photo || p.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      avatar: p.photo || p.avatar || '',
       studentProof: p.studentProof || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
       verificationStatus: 'Verified',
       kills: 0,
@@ -101,6 +101,19 @@ const registerTeam = async (req, res, next) => {
 
       // Log action
       await logAction('Team Registered', null, `Team ${team.name} registered with ID ${registrationId}`, team._id ? team._id.toString() : 'temp', 'Team');
+
+      // Send Registration Received email to Captain
+      sendRegistrationConfirmation({
+        to: cleanCaptainEmail,
+        captainName: cleanCaptainName,
+        teamName: cleanTeamName,
+        registrationId,
+        collegeName: cleanCollegeName,
+        captainPhone: cleanCaptainPhone,
+        playersCount: formattedPlayers.length
+      }).catch(err => {
+        console.error(`[EMAIL] Registration confirmation error for ${cleanCaptainEmail}:`, err.message);
+      });
     } catch (dbErr) {
       console.error('[DB NOTICE] Could not persist team record to MongoDB:', dbErr.message);
       team = {
@@ -289,18 +302,18 @@ const updateTeamStatus = async (req, res, next) => {
     // Collect all candidate recipient emails (captain email + player emails)
     const recipientEmails = new Set();
     if (typeof team.captain === 'object' && team.captain?.email && team.captain.email.includes('@')) {
-      recipientEmails.add(team.captain.email.trim());
+      recipientEmails.add(team.captain.email.trim().toLowerCase());
     }
     if (team.captainEmail && typeof team.captainEmail === 'string' && team.captainEmail.includes('@')) {
-      recipientEmails.add(team.captainEmail.trim());
+      recipientEmails.add(team.captainEmail.trim().toLowerCase());
     }
     if (team.email && typeof team.email === 'string' && team.email.includes('@')) {
-      recipientEmails.add(team.email.trim());
+      recipientEmails.add(team.email.trim().toLowerCase());
     }
     if (Array.isArray(team.players)) {
       team.players.forEach(p => {
         if (p.email && typeof p.email === 'string' && p.email.includes('@')) {
-          recipientEmails.add(p.email.trim());
+          recipientEmails.add(p.email.trim().toLowerCase());
         }
       });
     }

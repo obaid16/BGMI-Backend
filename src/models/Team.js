@@ -35,7 +35,7 @@ const PlayerSchema = new mongoose.Schema({
   },
   avatar: {
     type: String,
-    default: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'
+    default: ''
   },
   studentProof: {
     type: String,
