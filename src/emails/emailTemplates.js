@@ -111,7 +111,7 @@ function registrationApprovalTemplate({ captainName, teamName, registrationId })
     </p>
 
     <div style="text-align: center; margin: 24px 0;">
-      <a href="http://localhost:3000/matches" target="_blank" style="background-color: #e50914; color: #ffffff; font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; padding: 14px 28px; border-radius: 6px; text-decoration: none; display: inline-block;">
+      <a href="https://bgmi-frontend-pied.vercel.app/matches" target="_blank" style="background-color: #e50914; color: #ffffff; font-weight: 900; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px; padding: 14px 28px; border-radius: 6px; text-decoration: none; display: inline-block;">
         View Tournament Schedule
       </a>
     </div>
