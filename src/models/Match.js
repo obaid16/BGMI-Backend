@@ -64,6 +64,10 @@ const MatchSchema = new mongoose.Schema({
     shortName: {
       type: String,
       required: true
+    },
+    logo: {
+      type: String,
+      default: ''
     }
   }],
   winner: {

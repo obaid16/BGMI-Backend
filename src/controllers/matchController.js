@@ -14,7 +14,6 @@ const getMatches = async (req, res, next) => {
   try {
     const query = {};
     if (status) {
-      // capitalize or match exactly
       query.status = status;
     }
     if (round) {
@@ -23,7 +22,45 @@ const getMatches = async (req, res, next) => {
 
     // Sort: matchNumber ascending (1, 2, 3, 4)
     const matches = await Match.find(query).sort({ matchNumber: 1 }).lean();
-    const formatted = matches.map(m => ({ ...m, id: m._id.toString() }));
+
+    // Fetch approved teams to enrich participating teams with logos
+    const approvedTeams = await Team.find({ status: 'Approved' }).select('_id name shortName logo college').lean();
+    const teamMap = new Map();
+    approvedTeams.forEach((t) => {
+      teamMap.set(t._id.toString(), t);
+      teamMap.set(t.name.toLowerCase(), t);
+    });
+
+    const formatted = matches.map((m) => {
+      let parts = m.participatingTeams || [];
+      if (parts.length > 0) {
+        parts = parts.map((pt) => {
+          const found = teamMap.get(pt.id) || teamMap.get((pt.name || '').toLowerCase());
+          return {
+            id: pt.id || (found ? found._id.toString() : ''),
+            name: pt.name || (found ? found.name : 'Team'),
+            shortName: pt.shortName || (found ? found.shortName : 'TEAM'),
+            logo: pt.logo || (found ? found.logo : ''),
+          };
+        });
+      } else if (approvedTeams.length > 0) {
+        // Auto-populate with real approved tournament squads if match doesn't have custom teams assigned
+        parts = approvedTeams.map((t) => ({
+          id: t._id.toString(),
+          name: t.name,
+          shortName: t.shortName || t.name.slice(0, 4).toUpperCase(),
+          logo: t.logo || '',
+        }));
+      }
+
+      return {
+        ...m,
+        id: m._id.toString(),
+        participatingTeams: parts,
+        teamsCount: parts.length > 0 ? parts.length : (m.teamsCount || 24),
+      };
+    });
+
     res.status(200).json({ success: true, data: formatted });
   } catch (error) {
     next(error);
@@ -44,14 +81,47 @@ const getMatchById = async (req, res, next) => {
 
     let match;
     if (!isNaN(matchNum)) {
-      match = await Match.findOne({ matchNumber: matchNum });
+      match = await Match.findOne({ matchNumber: matchNum }).lean();
     }
     if (!match && isObjectId) {
-      match = await Match.findById(id);
+      match = await Match.findById(id).lean();
     }
     if (!match) {
       return res.status(404).json({ success: false, message: 'Match not found' });
     }
+
+    // Enrich participating teams with logos
+    const approvedTeams = await Team.find({ status: 'Approved' }).select('_id name shortName logo college').lean();
+    const teamMap = new Map();
+    approvedTeams.forEach((t) => {
+      teamMap.set(t._id.toString(), t);
+      teamMap.set(t.name.toLowerCase(), t);
+    });
+
+    let parts = match.participatingTeams || [];
+    if (parts.length > 0) {
+      parts = parts.map((pt) => {
+        const found = teamMap.get(pt.id) || teamMap.get((pt.name || '').toLowerCase());
+        return {
+          id: pt.id || (found ? found._id.toString() : ''),
+          name: pt.name || (found ? found.name : 'Team'),
+          shortName: pt.shortName || (found ? found.shortName : 'TEAM'),
+          logo: pt.logo || (found ? found.logo : ''),
+        };
+      });
+    } else if (approvedTeams.length > 0) {
+      parts = approvedTeams.map((t) => ({
+        id: t._id.toString(),
+        name: t.name,
+        shortName: t.shortName || t.name.slice(0, 4).toUpperCase(),
+        logo: t.logo || '',
+      }));
+    }
+
+    match.id = match._id.toString();
+    match.participatingTeams = parts;
+    match.teamsCount = parts.length > 0 ? parts.length : (match.teamsCount || 24);
+
     res.status(200).json({ success: true, data: match });
   } catch (error) {
     next(error);
@@ -85,23 +155,39 @@ const createMatch = async (req, res, next) => {
             formattedParticipatingTeams.push({
               id: teamDoc._id.toString(),
               name: teamDoc.name,
-              shortName: teamDoc.shortName || teamDoc.name.slice(0, 4).toUpperCase()
+              shortName: teamDoc.shortName || teamDoc.name.slice(0, 4).toUpperCase(),
+              logo: teamDoc.logo || '',
             });
           } else {
             formattedParticipatingTeams.push({
               id: t,
               name: `Team ${t.slice(-4)}`,
-              shortName: 'TEAM'
+              shortName: 'TEAM',
+              logo: '',
             });
           }
         } else if (t && typeof t === 'object') {
           formattedParticipatingTeams.push({
             id: (t.id || t._id || '').toString(),
             name: t.name || 'Team',
-            shortName: t.shortName || (t.name || 'TEAM').slice(0, 4).toUpperCase()
+            shortName: t.shortName || (t.name || 'TEAM').slice(0, 4).toUpperCase(),
+            logo: t.logo || '',
           });
         }
       }
+    }
+
+    // Auto-populate from approved teams if not explicitly specified
+    if (formattedParticipatingTeams.length === 0) {
+      const approvedTeams = await Team.find({ status: 'Approved' }).lean();
+      approvedTeams.forEach((t) => {
+        formattedParticipatingTeams.push({
+          id: t._id.toString(),
+          name: t.name,
+          shortName: t.shortName || t.name.slice(0, 4).toUpperCase(),
+          logo: t.logo || '',
+        });
+      });
     }
 
     const match = await Match.create({

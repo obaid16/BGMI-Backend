@@ -7,23 +7,23 @@ const connectDB = async () => {
   if (primaryUri) {
     try {
       const conn = await mongoose.connect(primaryUri, {
-        serverSelectionTimeoutMS: 5000,
-        connectTimeoutMS: 10000,
+        serverSelectionTimeoutMS: 30000,
+        connectTimeoutMS: 30000,
         socketTimeoutMS: 45000,
-        maxPoolSize: 50,
-        minPoolSize: 10,
-        family: 4 // Force IPv4 to avoid IPv6 DNS delays on Windows
+        maxPoolSize: 20,
+        minPoolSize: 0,
       });
       console.log(`MongoDB Connected (Atlas): ${conn.connection.host}`);
       return;
     } catch (error) {
       console.warn(`[DB WARNING] MongoDB Atlas connection failed (${error.message}). Trying local MongoDB...`);
+      await mongoose.disconnect().catch(() => {});
     }
   }
 
   try {
     const conn = await mongoose.connect(localUri, {
-      serverSelectionTimeoutMS: 3000
+      serverSelectionTimeoutMS: 5000,
     });
     console.log(`MongoDB Connected (Local): ${conn.connection.host}`);
   } catch (localErr) {
